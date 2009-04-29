@@ -1,28 +1,12 @@
-<table>
-  <tr>
-    <th>Username</th>
-    <th>CID Num</th>
-    <th>CID Name</th>
-    <th>Dest Num</th>
-    <th>Channel</th>
-    <th>Context</th>
-    <th>Start</th>
-    <th>End</th>
-    <th>Duration</th>
-    <th>Bill Secs</th>
-  </tr>
-  <% @calls.each do |call| %>
-  <tr>
-    <td><%= call.username %></td>
-    <td><%= call.caller_id_number %></td>
-    <td><%= call.caller_id_name %></td>
-    <td><%= call.destination_number %></td>
-    <td><%= call.channel %></td>
-    <td><%= call.context %></td>
-    <td><%= call.start_stamp %></td>
-    <td><%= call.end_stamp %></td>
-    <td><%= call.duration %></td>
-    <td><%= call.billsec %></td>
-  </tr>
-  <% end %>
-</table>
+<form action=<%= R(MainController, :user_report) %> method="post">
+  Start Date: <br />
+  <input type="text" name="date_start" id="cdrbegin"><br />
+   End Date: <br />
+  <input type="text" name="date_end" id="cdrend"><br />
+  Username (Extension): 
+  <input type="text" name="username" ><br />
+  and/or<br />
+  Phone Num
+  <input type="text" name="phone_num"><br />
+  <input type="submit" value="Submit">
+</form>
