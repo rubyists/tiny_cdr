@@ -1,9 +1,21 @@
-require 'rexml/document'
-
 class Call < Sequel::Model
+  def self.create_from_xml(xml)
+    doc = Nokogiri::XML(xml)
 
-  def self.create_from_xml(doc)
-    self.create(:username => doc.username, :caller_id_number => doc.caller_id_number, :caller_id_name => doc.caller_id_name, :destination_number => doc.destination_number, :channel => doc.channel, :context => doc.context, :start_stamp => Time.at(doc.start_stamp.to_f), :end_stamp => Time.at(doc.end_stamp.to_f), :duration => doc.duration, :billsec => doc.billsec)
+    create(
+      :username           => doc.at('/cdr/callflow/caller_profile/username').to_s,
+      :caller_id_number   => doc.at('/cdr/callflow/caller_profile/caller_id_number').to_s,
+      :caller_id_name     => doc.at('/cdr/callflow/caller_profile/caller_id_name').to_s,
+      :destination_number => doc.at('/cdr/callflow/caller_profile/destination_number').to_s,
+      :channel            => doc.at('/cdr/callflow/caller_profile/chan_name').to_s,
+      :context            => doc.at('/cdr/callflow/caller_profile/context').to_s,
+      :start_stamp        => Time.at(doc.at('/cdr/variables/start_epoch').to_i),
+      :end_stamp          => Time.at(doc.at('/cdr/variables/end_epoch').to_i),
+      :duration           => doc.at('/cdr/variables/duration').to_i,
+      :billsec            => doc.at('/cdr/variables/billsec').to_i,
+    )
+
+    # convert to JSON and store in CouchDB
+    CDR_LOG_PARSER.parse(xml)
   end
-
 end
