@@ -5,10 +5,9 @@ class Log
 
   def self.create_from_xml(xml)
     parser = LogParser.new
-    Nokogiri::XML::SAX::Parser.new(parser).parse
+    Nokogiri::XML::SAX::Parser.new(parser).parse(xml)
     instance = Log.new(parser.out)
     instance.save
-    p instance
     return instance
   end
 end
