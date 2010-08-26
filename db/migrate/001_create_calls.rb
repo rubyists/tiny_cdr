@@ -10,8 +10,8 @@ class CallsTable < Sequel::Migration
       varchar :destination_number, :size => 32, :null => false
       varchar :channel, :null => false
       varchar :context, :null => false
-      datetime :start_stamp, :null => false
-      datetime :end_stamp, :null => false
+      timestamp :start_stamp, :null => false
+      timestamp :end_stamp, :null => false
       varchar :duration, :size => 12
       varchar :billsec, :size => 12
     end
