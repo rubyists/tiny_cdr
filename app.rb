@@ -8,5 +8,4 @@ $LOAD_PATH.unshift(__DIR__)
 require 'controller/init'
 require 'model/init'
 
-Ramaze.start
 

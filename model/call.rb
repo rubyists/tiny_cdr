@@ -1,5 +1,10 @@
 class Call < Sequel::Model
   def self.create_from_xml(xml)
+
+    # convert to JSON and store in CouchDB
+    CDR_LOG_PARSER.parse(xml)
+
+    # Store basic data in a postgres record
     doc = Nokogiri::XML(xml)
 
     create(
@@ -15,7 +20,5 @@ class Call < Sequel::Model
       :billsec            => doc.at('/cdr/variables/billsec').to_i,
     )
 
-    # convert to JSON and store in CouchDB
-    CDR_LOG_PARSER.parse(xml)
   end
 end
