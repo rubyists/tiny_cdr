@@ -3,7 +3,7 @@ require 'cgi'
 
 # Here goes your database connection and options:
 require 'makura'
-Makura::Model.server = 'http://192.168.6.250:5984'
+Makura::Model.server = 'http://jimmy:5984'
 Makura::Model.database = 'tiny_cdr'
 
 require 'sequel'
