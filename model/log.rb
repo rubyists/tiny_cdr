@@ -2,6 +2,15 @@ class Log
   include Makura::Model
 
   properties :channel_data, :variables, :app_log, :callflow
+
+  def self.create_from_xml(xml)
+    parser = LogParser.new
+    Nokogiri::XML::SAX::Parser.new(parser).parse
+    instance = Log.new(parser.out)
+    instance.save
+    p instance
+    return instance
+  end
 end
 
 class LogParser < Nokogiri::XML::SAX::Document
@@ -10,10 +19,6 @@ class LogParser < Nokogiri::XML::SAX::Document
   def start_document
     @keys = []
     @out = {}
-  end
-
-  def end_document
-    Log.new(@out).save
   end
 
   def start_element(name, attrs = [])

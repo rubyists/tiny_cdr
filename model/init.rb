@@ -14,5 +14,3 @@ DB = Sequel.postgres('tiny_cdr', :host => "localhost")
 require File.expand_path('../../lib/tiny_cdr', __FILE__)
 require File.expand_path('../call', __FILE__)
 require File.expand_path('../log', __FILE__)
-
-CDR_LOG_PARSER = Nokogiri::XML::SAX::Parser.new(LogParser.new)

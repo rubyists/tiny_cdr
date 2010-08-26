@@ -2,12 +2,13 @@ class Call < Sequel::Model
   def self.create_from_xml(xml)
 
     # convert to JSON and store in CouchDB
-    CDR_LOG_PARSER.parse(xml)
+    log = Log.create_from_xml(xml)
 
     # Store basic data in a postgres record
     doc = Nokogiri::XML(xml)
 
     create(
+      :couch_id           => log.id,
       :username           => doc.at('/cdr/callflow/caller_profile/username').to_s,
       :caller_id_number   => doc.at('/cdr/callflow/caller_profile/caller_id_number').to_s,
       :caller_id_name     => doc.at('/cdr/callflow/caller_profile/caller_id_name').to_s,
