@@ -1,0 +1,46 @@
+# Copyright (c) 2010 The Rubyists, LLC (effortless systems) <rubyists@rubyists.com>
+# Distributed under the terms of the MIT license.
+# The full text can be found in the LICENSE file included with this software
+#
+
+TinyCDR is a simple app for pushing FreeSWITCH xml_cdr records into both a 
+PostgreSQL (or other Sequel-supported db) and CouchDB data store.  The Sequel record is just 
+the basics and the couch record is the exact xml as POSTed by FreeSWITCH's mod_xml_cdr.  
+This is fresh stuff, very few docs.  The web side is a ramaze app, start with
+
+ruby start.rb
+
+and point FreeSWITCH's mod_xml_curl at the url it tells you it's listening on.
+
+To import a single record, use
+
+ruby -r ./app -r 'Call.create_from_xml(File.read("/path/to/the/xml/file.xml"))'
+
+
+PREREQUISITES
+
+* couchdb
+* ruby
+  * ramaze
+  * nokogiri
+  * makura
+  * sequel
+  * pg (for postgres, mysql or other adapters may work)
+
+INSTALL
+
+  * Check out the source.
+  * Create the couch database tiny_cdr
+  * Create the Sequel database (for postgres, this is createdb tiny_cdr)
+  * Modify model/init.rb to point to your databases you created
+  * Test it, with irb -r ./app in the top-level of the source tree
+  * Let us know if it doesn't work.
+
+TODO
+  * Test Harness
+  * Reports (Lots of reports!)
+  * Documentation
+
+
+SUPPORT
+  #rubyists on Freenode irc (http://freenode.net)
