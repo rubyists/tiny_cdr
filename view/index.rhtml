@@ -1,4 +1,4 @@
-<form action=<%= R(MainController, :user_report) %> method="post">
+<form action=<%= MainController.r(:user_report) %> method="get">
   Start Date: <br />
   <input type="text" name="date_start" id="cdrbegin"><br />
    End Date: <br />
@@ -8,5 +8,7 @@
   and/or<br />
   Phone Num
   <input type="text" name="phone_num"><br />
+  Ignore Local (extension to extension) Calls?
+  <input type="checkbox" name="avoid_locals"></br>
   <input type="submit" value="Submit">
 </form>

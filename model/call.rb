@@ -21,7 +21,14 @@ class Call < Sequel::Model
 
   end
 
+  def uuid
+    detail.callflow["caller_profile"]["uuid"]
+  end
   def detail
-    Log[couch_id] if couch_id
+    @_couch ||= Log[couch_id] if couch_id
+  end
+
+  def fifo_recipient
+    detail.callflow["caller_profile"]["originatee"]["originatee_caller_profile"]["destination_number"] rescue nil
   end
 end
