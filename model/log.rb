@@ -3,6 +3,34 @@ class Log
 
   properties :channel_data, :variables, :app_log, :callflow
 
+  def self.sync(name)
+    root = File.expand_path("../../couch/#{name}", __FILE__)
+    glob = File.join(root, "**/*.js")
+
+    begin
+      layout = self["_design/#{name}"] || {}
+    rescue Makura::Error::ResourceNotFound
+      layout = {}
+    end
+
+    layout['language'] ||= 'javascript'
+    layout['_id'] ||= "_design/#{name}"
+
+    Dir.glob(glob) do |file|
+      keys = File.dirname(file).sub(root, '').scan(/[^\/]+/)
+      doc = File.read(file)
+      last = nil
+      keys.inject(layout){|k,v| last = k[v] ||= {} }
+      last[File.basename(file, '.js')] = doc
+    end
+
+    database.save(layout)
+
+    exit
+  end
+
+  sync :log
+
   def self.create_from_xml(xml)
     parser = LogParser.new
     Nokogiri::XML::SAX::Parser.new(parser).parse(xml)

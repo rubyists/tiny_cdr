@@ -3,14 +3,12 @@ require 'cgi'
 
 # Here goes your database connection and options:
 require 'makura'
-Makura::Model.server = 'http://jimmy:5984'
+Makura::Model.server = 'http://localhost:5984'
 Makura::Model.database = 'tiny_cdr'
 
 require 'sequel'
 DB = Sequel.postgres('tiny_cdr', :host => "localhost")
 
 # Here go your requires for models:
-# require 'model/user'
-require File.expand_path('../../lib/tiny_cdr', __FILE__)
-require File.expand_path('../call', __FILE__)
-require File.expand_path('../log', __FILE__)
+require_relative 'call'
+require_relative 'log'

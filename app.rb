@@ -1,11 +1,12 @@
 require 'ramaze'
 
-# Add directory start.rb is in to the load path, so you can run the app from
-# any other working path
-$LOAD_PATH.unshift(__DIR__)
+Ramaze.setup do
+  gem 'nokogiri'
+  gem 'makura'
+  gem 'sequel'
+  gem 'erubis'
+end
 
 # Initialize controllers and models
-require 'controller/init'
-require 'model/init'
-
-
+require_relative 'controller/init'
+require_relative 'model/init'
