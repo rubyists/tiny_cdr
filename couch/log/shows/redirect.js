@@ -1,8 +1,13 @@
 function(doc, req){
-  // <form method="get" action="/tiny_cdr/_design/log/_list/report/call_detail">
+  var date_start = Date.parse(req.query.date_start) / 1000,
+      date_end = Date.parse(req.query.date_end) / 1000,
+      username = req.query.username;
 
-  start({
-    code: 302,
-    headers: {'Location': '/tiny_cdr/_design/log/_list/report/call_detail'}
-  });
+  var query =
+    '?startkey=' + encodeURIComponent('["' + username + '",' + date_start + ']') +
+    '&endkey=' + encodeURIComponent('["' +  username + '",' + date_end + ']');
+
+  var url = '/tiny_cdr/_design/log/_list/report/call_detail' + query;
+
+  return {code: 302, body: 'See ' + url, headers: {'Location': url}}
 }

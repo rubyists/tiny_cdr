@@ -17,6 +17,7 @@ function(doc, req){
         $('.datepicker').datepicker({
           minDate: '-1Y',
           maxDate: '+0D',
+          dateFormat: 'd M, yy',
         });
       });
     ]]></script>
