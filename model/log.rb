@@ -25,8 +25,6 @@ class Log
     end
 
     database.save(layout)
-
-    exit
   end
 
   sync :log
