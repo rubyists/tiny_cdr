@@ -66,7 +66,13 @@ class LogParser < Nokogiri::XML::SAX::Document
     content =
       case name
       when /(time|sec|epoch|duration)$/, *INTEGER
-        Integer(content)
+        begin
+          Integer(content)
+        rescue ArgumentError
+          Time.strptime(CGI.unescape(content), '%A, %B %d %Y, %I %M %p').to_i
+        rescue ArgumentError
+          CGI.unescape(content)
+        end
       else
         case content
         when 'true'
