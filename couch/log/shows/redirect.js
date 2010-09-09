@@ -7,7 +7,12 @@ function(doc, req){
     '?startkey=' + encodeURIComponent('["' + username + '",' + date_start + ']') +
     '&endkey=' + encodeURIComponent('["' +  username + '",' + date_end + ']');
 
-  var url = '/tiny_cdr/_design/log/_list/report/call_detail' + query;
+  var url = '/tiny_cdr/_design/log/_list/report/call_detail'
 
+  if(req.query.avoid_locals){
+    url += '_avoid_locals';
+  }
+
+  url += query;
   return {code: 302, body: 'See ' + url, headers: {'Location': url}}
 }
