@@ -1,0 +1,34 @@
+<table>
+  <tr>
+    <th>Total Calls</th>
+    <td><%= @calls.size %></td>
+    <th>Total Talk Time</th>
+    <td><%= @calls.inject(0){|s,v| s + v['duration'].to_i } / 60 %> minutes</td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <th>Username</th>
+    <th>CID Num</th>
+    <th>CID Name</th>
+    <th>Dest Num</th>
+    <th>Start</th>
+    <th>End</th>
+    <th>Duration</th>
+    <th>Channel</th>
+    <th>Context</th>
+  </tr>
+  <% @calls.each do |call| %>
+  <tr>
+    <td><%= call['username'] %></td>
+    <td><%= call['caller_id_number'] %></td>
+    <td><%= call['caller_id_name'] %></td>
+    <td><%= call['destination_number'] %></td>
+    <td><%= Time.at(call['start']).strftime("%m-%d-%Y %H:%M:%S") %></td>
+    <td><%= Time.at(call['end']).strftime("%m-%d-%Y %H:%M:%S") %></td>
+    <td><%= call['duration'] %></td>
+    <td><%= call['chan_name'] %></td>
+    <td><%= call['context'] %></td>
+  </tr>
+  <% end %>
+</table>

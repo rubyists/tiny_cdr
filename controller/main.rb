@@ -35,6 +35,19 @@ class MainController < Controller
     ds = ds.filter{start_stamp >= Date.strptime(start, "%m/%d/%Y") } if !(start.nil? or start.empty?)
     ds = ds.filter{end_stamp <= Date.strptime(stop, "%m/%d/%Y") } if !(stop.nil? or stop.empty?)
     ds = ds.filter("caller_id_number ~ '^\\d\\d\\d\\d\\d+$' or destination_number ~ '^\\d\\d\\d\\d\\d+$'") if avoid_locals
-    @calls = ds.order(:start_stamp).all
+    ds = ds.order(:start_stamp)
+    p ds.sql # Output the raw sql
+    @calls = ds.all
+  end
+
+  def user_report_couch
+    @title = "Call Detail for #{h request[:username]}"
+    view = request[:avoid_locals] ? 'call_detail_avoid_locals' : 'call_detail'
+
+    @calls = Makura::Model.database.view(
+      "report/_view/#{view}",
+      startkey: [request[:username], Time.strptime(request[:date_start], '%m/%d/%Y').to_i],
+      endkey: [request[:username], Time.strptime(request[:date_end], '%m/%d/%Y').to_i]
+    )['rows'].map{|row| row['value'] }
   end
 end
