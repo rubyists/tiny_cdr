@@ -4,12 +4,16 @@
 #
 desc 'install all possible dependencies'
 task :setup => :gem_setup do
-  GemInstaller.new do
+  GemSetup.new do
     # core
+    gem 'ramaze'
+    gem 'nokogiri'
+    gem 'makura'
+    gem 'sequel'
+    gem 'pg'
 
     # spec
     gem 'bacon'
-    gem 'rcov'
 
     # doc
     gem 'yard'
