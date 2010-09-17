@@ -1,4 +1,5 @@
 require 'ramaze'
+require_relative "./lib/tiny_cdr"
 
 Ramaze.setup do
   gem 'nokogiri'
