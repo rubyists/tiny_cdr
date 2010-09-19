@@ -4,9 +4,20 @@
 #
 require_relative "../app"
 require_relative "db_helper"
+require "digest/md5"
+
+FIRST_NAMES = %w{Mike Amy John Peter Mary George Steve Brandon Kelly Donna Paul Fred Allison}
+LAST_NAMES = %w{Johnson Jefferson Washington Madison Adams Jackson Lincoln}
 
 #
-doc = <<XML
+def makedoc
+  user = 1000 + rand(9000)
+  phone = 1000000000 + rand(8999999999)
+  ip = "172.25.25.#{rand(255)}"
+  agent_first = FIRST_NAMES[rand(FIRST_NAMES.size)]
+  agent_last =  LAST_NAMES[rand(LAST_NAMES.size)]
+  uuid = "2e831835-d336-4735-b3e5-" + Digest::MD5.hexdigest(Time.now.to_f.to_s)[0 .. 12]
+  doc = <<XML
 <?xml version="1.0"?>
 <cdr>
   <channel_data>
@@ -17,16 +28,16 @@ doc = <<XML
     <caps>1=1;2=1;3=1</caps>
   </channel_data>
   <variables>
-    <uuid>2e831835-d336-4735-b3e5-90e5d7dc8187</uuid>
-    <sip_network_ip>192.168.0.2</sip_network_ip>
+    <uuid>#{uuid}</uuid>
+    <sip_network_ip>#{ip}</sip_network_ip>
     <sip_network_port>56866</sip_network_port>
-    <sip_received_ip>192.168.0.2</sip_received_ip>
+    <sip_received_ip>#{ip}</sip_received_ip>
     <sip_received_port>56866</sip_received_port>
     <sip_via_protocol>udp</sip_via_protocol>
-    <sip_from_user>1000</sip_from_user>
-    <sip_from_uri>1000%40192.168.0.2</sip_from_uri>
-    <sip_from_host>192.168.0.2</sip_from_host>
-    <sip_from_user_stripped>1000</sip_from_user_stripped>
+    <sip_from_user>#{user}</sip_from_user>
+    <sip_from_uri>#{user}%40#{ip}</sip_from_uri>
+    <sip_from_host>#{ip}</sip_from_host>
+    <sip_from_user_stripped>#{user}</sip_from_user_stripped>
     <start_epoch>1284667204</start_epoch>
     <end_epoch>1284667240</end_epoch>
     <sip_from_tag>BD37552C-4B5</sip_from_tag>
@@ -35,39 +46,39 @@ doc = <<XML
     <application app_name="set" app_data="continue_on_fail=true">
     </application>
     <application app_name="bridge"
-    app_data="sofia/external/gateway/gw001/1000"></application>
+    app_data="sofia/external/gateway/gw001/#{user}"></application>
     <application app_name="bridge"
-    app_data="sofia/external/gateway/gw002/1000"></application>
+    app_data="sofia/external/gateway/gw002/#{user}"></application>
   </app_log>
   <callflow dialplan="XML" profile_index="1">
-    <extension name="1000" number="1000">
+    <extension name="#{user}" number="#{user}">
       <application app_name="set" app_data="continue_on_fail=true">
       </application>
       <application app_name="bridge"
-      app_data="sofia/external/gateway/gw001/1000"></application>
+      app_data="sofia/external/gateway/gw001/#{user}"></application>
       <application app_name="bridge"
-      app_data="sofia/external/gateway/gw002/1000"></application>
+      app_data="sofia/external/gateway/gw002/#{user}"></application>
       <application app_name="bridge"
-      app_data="sofia/external/gateway/gw003/1000"></application>
+      app_data="sofia/external/gateway/gw003/#{user}"></application>
       <application app_name="bridge"
-      app_data="sofia/external/gateway/gw004/1000"></application>
+      app_data="sofia/external/gateway/gw004/#{user}"></application>
       <application app_name="bridge"
-      app_data="sofia/external/gateway/gw005/1000"></application>
+      app_data="sofia/external/gateway/gw005/#{user}"></application>
     </extension>
     <caller_profile>
-      <username>1000</username>
+      <username>#{user}</username>
       <dialplan>XML</dialplan>
-      <caller_id_name>1000</caller_id_name>
-      <ani>1000</ani>
+      <caller_id_name>#{agent_first} #{agent_last}</caller_id_name>
+      <ani>#{user}</ani>
       <aniii></aniii>
-      <caller_id_number>1000</caller_id_number>
-      <network_addr>192.168.0.2</network_addr>
+      <caller_id_number>#{user}</caller_id_number>
+      <network_addr>#{ip}</network_addr>
       <rdnis>1000</rdnis>
-      <destination_number>1000</destination_number>
-      <uuid>2e831835-d336-4735-b3e5-90e5d7dc8187</uuid>
+      <destination_number>#{phone}</destination_number>
+      <uuid>#{uuid}</uuid>
       <source>mod_sofia</source>
       <context>default</context>
-      <chan_name>sofia/default/1000@192.168.0.2</chan_name>
+      <chan_name>sofia/default/1000@#{ip}</chan_name>
     </caller_profile>
     <times>
       <created_time>1274439432438053</created_time>
@@ -82,5 +93,6 @@ doc = <<XML
   </callflow>
 </cdr>
 XML
+end
 
-call = Call.create_from_xml(doc)
+call = Call.create_from_xml(makedoc)
