@@ -2,22 +2,22 @@
 # Distributed under the terms of the MIT license.
 # The full text can be found in the LICENSE file included with this software
 #
-require_relative "../app"
-require_relative "db_helper"
 require "digest/md5"
 
 FIRST_NAMES = %w{Mike Amy John Peter Mary George Steve Brandon Kelly Donna Paul Fred Allison}
 LAST_NAMES = %w{Johnson Jefferson Washington Madison Adams Jackson Lincoln}
 
-#
-def makedoc
-  user = 1000 + rand(9000)
-  phone = 1000000000 + rand(8999999999)
-  ip = "172.25.25.#{rand(255)}"
-  agent_first = FIRST_NAMES[rand(FIRST_NAMES.size)]
-  agent_last =  LAST_NAMES[rand(LAST_NAMES.size)]
-  uuid = "2e831835-d336-4735-b3e5-" + Digest::MD5.hexdigest(Time.now.to_f.to_s)[0 .. 12]
-  doc = <<XML
+shared :makedoc do
+  def makedoc
+    user = 1000 + rand(9000)
+    phone = 1000000000 + rand(8999999999)
+    ip = "172.25.25.#{rand(255)}"
+    agent_first = FIRST_NAMES[rand(FIRST_NAMES.size)]
+    agent_last =  LAST_NAMES[rand(LAST_NAMES.size)]
+    uuid = "2e831835-d336-4735-b3e5-" + Digest::MD5.hexdigest(Time.now.to_f.to_s)[0 .. 12]
+    start_epoch = 1000000000 + rand(284904211)
+    end_epoch = start_epoch + rand(400)
+    doc = <<-XML
 <?xml version="1.0"?>
 <cdr>
   <channel_data>
@@ -38,8 +38,8 @@ def makedoc
     <sip_from_uri>#{user}%40#{ip}</sip_from_uri>
     <sip_from_host>#{ip}</sip_from_host>
     <sip_from_user_stripped>#{user}</sip_from_user_stripped>
-    <start_epoch>1284667204</start_epoch>
-    <end_epoch>1284667240</end_epoch>
+    <start_epoch>#{start_epoch}</start_epoch>
+    <end_epoch>#{end_epoch}</end_epoch>
     <sip_from_tag>BD37552C-4B5</sip_from_tag>
   </variables>
   <app_log>
@@ -73,26 +73,25 @@ def makedoc
       <aniii></aniii>
       <caller_id_number>#{user}</caller_id_number>
       <network_addr>#{ip}</network_addr>
-      <rdnis>1000</rdnis>
+      <rdnis>#{user}</rdnis>
       <destination_number>#{phone}</destination_number>
       <uuid>#{uuid}</uuid>
       <source>mod_sofia</source>
       <context>default</context>
-      <chan_name>sofia/default/1000@#{ip}</chan_name>
+      <chan_name>sofia/default/#{user}@#{ip}</chan_name>
     </caller_profile>
     <times>
-      <created_time>1274439432438053</created_time>
+      <created_time>#{start_epoch * 1000000}</created_time>
       <profile_created_time>1274439432448060</profile_created_time>
       <progress_time>0</progress_time>
       <progress_media_time>0</progress_media_time>
       <answered_time>0</answered_time>
-      <hangup_time>1274439438418776</hangup_time>
+      <hangup_time>#{end_epoch * 1000000}</hangup_time>
       <resurrect_time>0</resurrect_time>
       <transfer_time>0</transfer_time>
     </times>
   </callflow>
 </cdr>
-XML
+    XML
+  end
 end
-
-call = Call.create_from_xml(makedoc)
