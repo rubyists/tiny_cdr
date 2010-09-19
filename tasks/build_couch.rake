@@ -16,11 +16,24 @@ task :build_couch do
 
   begin
     sout = IO.popen("bash -c '#{COMMAND_LINE}'")
-    while out = sout.gets.strip
-      puts out unless out.empty?
+    while out = sout.gets
+      puts out.strip unless out.empty?
     end
   ensure
     sout.close rescue nil
   end
+  puts "
+Couch has probably built, if all you see is an
+
+  rm -rf '#{ENV['PWD']}/dependencies/build-couchdb/build'/lib/erlang/lib/mnesia-*
+  rake aborted!
+  No such file or directory
+  
+  error, ignore it and try starting couch with
+
+  ./dependencies/build-couchdb/build/bin/couchdb
+
+  if it runs you're good to go.
+  "
 
 end
