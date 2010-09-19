@@ -30,7 +30,16 @@ PREREQUISITES
 INSTALL
 
   * Check out the source.
-  * Create the couch database tiny_cdr
+  * run rake setup, this should get the ruby dependencies
+  * Get some coffee and a newspaper or your favorite news feed ready
+  * run rake build_couch
+  * This is going to take a long time, builds erlang and couch, read your news
+  * Done with your news?  Read the couch intro: http://couchdb.apache.org/docs/intro.html
+  * Mastered the Intro? Read the couch view api: http://wiki.apache.org/couchdb/HTTP_view_API
+  * rake build_couch should be done, if couchdb starts you can check it in your browser
+    at http://localhost:5984/_utils
+  * Create the tiny_cdr directory in the futon admin interface, do not add any users 
+    or an admin user to couch yet (It's only bound to localhost unless you told it otherwise)
   * Create the Sequel database (for postgres, this is createdb tiny_cdr)
   * Modify model/init.rb to point to your databases you created
   * Test it, with irb -r ./app in the top-level of the source tree
