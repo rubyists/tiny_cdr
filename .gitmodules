@@ -1,0 +1,3 @@
+[submodule "dependencies/build-couchdb"]
+	path = dependencies/build-couchdb
+	url = http://github.com/jhs/build-couchdb.git
