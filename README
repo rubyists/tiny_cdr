@@ -44,6 +44,10 @@ INSTALL
   * Modify model/init.rb to point to your databases you created
   * Test it, with irb -r ./app in the top-level of the source tree
   * Let us know if it doesn't work.
+  * If it does work, you can use
+    Call.create_from_xml(File.read("/path/to/the/xml/file.xml")) as from above. To import a bunch, use
+    Dir["/path/to/files/*.xml"].each { |file| Call.create_from_xml(File.read(file)) }
+  * Now you can start the webserver (thin -R config.ru) and hit http://localhost:7000 to see a report
 
 TODO
   * Test Harness
