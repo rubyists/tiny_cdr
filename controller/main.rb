@@ -31,7 +31,7 @@ class MainController < Controller
       elsif phone_num
         [conditionals, phone_num, phone_num, phone_num]
       end
-    ds = (filter ? Call.filter(filter) : Call)
+    ds = (filter ? TinyCdr::Call.filter(filter) : TinyCdr::Call)
     ds = ds.filter{start_stamp >= Date.strptime(start, "%m/%d/%Y") } if !(start.nil? or start.empty?)
     ds = ds.filter{end_stamp <= Date.strptime(stop, "%m/%d/%Y") } if !(stop.nil? or stop.empty?)
     ds = ds.filter("caller_id_number ~ '^\\d\\d\\d\\d\\d+$' or destination_number ~ '^\\d\\d\\d\\d\\d+$'") if avoid_locals
