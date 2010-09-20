@@ -4,6 +4,13 @@ function(doc) {
   var profile = doc.callflow.caller_profile,
       variables = doc.variables;
 
+  var valid = /^\\d{4}\\d+$/;
+
+  if(valid.test(profile.caller_id_number) &&
+     valid.test(profile.destination_number)){
+    return;
+  }
+
   var value = {
     username:           profile.username,
     caller_id_number:   profile.caller_id_number,
@@ -17,14 +24,11 @@ function(doc) {
     billsec:  variables.billsec,
   }
 
-  var seen = [],
-      valid = /^\\d{4}\\d+$/,
-      elements = [profile.username];
-
-  if(valid.test(profile.caller_id_number)){ elements.push(profile.caller_id_number); }
-  if(valid.test(profile.destination_number)){ elements.push(profile.destination_number); }
-
-  elements.forEach(function(element){
+  var seen = [];
+  [ profile.username,
+    profile.caller_id_number,
+    profile.destination_number,
+  ].forEach(function(element){
     if(seen.indexOf(element) == -1){
       seen.push(element);
       emit([element, variables.start_epoch], value);
