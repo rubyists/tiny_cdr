@@ -1,9 +1,9 @@
 <table>
   <tr>
     <th>Total Calls</th>
-    <td><%= @calls.size %></td>
+    <td class="total_calls"><%= @calls.size %></td>
     <th>Total Talk Time</th>
-    <td><%= @calls.inject(0) {|a,b| a + b.duration.to_i }/60 %> minutes</td>
+    <td class="total_time"><%= @total_time %> minutes</td>
   </tr>
 </table>
 <table>
@@ -20,15 +20,15 @@
   </tr>
   <% @calls.each do |call| %>
   <tr>
-    <td><%= call.username %></td>
-    <td><%= call.caller_id_number %></td>
-    <td><%= call.caller_id_name %></td>
-    <td><%= call.destination_number %></td>
-    <td><%= call.start_stamp.strftime("%m-%d-%Y %H:%M:%S") %></td>
-    <td><%= call.end_stamp.strftime("%m-%d-%Y %H:%M:%S") %></td>
-    <td><%= call.duration %></td>
-    <td><%= call.channel %></td>
-    <td><%= call.context %></td>
+    <td class="username"><%= call.username %></td>
+    <td class="cid_num"><%= call.caller_id_number %></td>
+    <td class="cid_name"><%= call.caller_id_name %></td>
+    <td class="dest_num"><%= call.destination_number %></td>
+    <td class="start"><%= call.start_stamp.strftime("%m-%d-%Y %H:%M:%S") %></td>
+    <td class="end"><%= call.end_stamp.strftime("%m-%d-%Y %H:%M:%S") %></td>
+    <td class="duration"><%= call.duration %></td>
+    <td class="channel"><%= call.channel %></td>
+    <td class="context"><%= call.context %></td>
   </tr>
   <% end %>
 </table>

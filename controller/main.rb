@@ -38,6 +38,8 @@ class MainController < Controller
     ds = ds.order(:start_stamp)
     p ds.sql # Output the raw sql
     @calls = ds.all
+
+    @total_time = @calls.inject(0) {|a,b| a + b.duration.to_i }/60
   end
 
   def user_report_couch
