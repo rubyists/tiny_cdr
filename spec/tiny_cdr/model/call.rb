@@ -3,10 +3,6 @@ require_relative "../../db_helper"
 require_relative "../../cdr_data"
 require_relative "../../../model/call"
 
-require 'makura'
-Makura::Model.database = 'tiny_cdr_spec'
-Makura::Model.database.destroy
-Makura::Model.database.create
 
 require_relative "../../../model/log"
 
