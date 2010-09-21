@@ -8,15 +8,21 @@ FIRST_NAMES = %w{Mike Amy John Peter Mary George Steve Brandon Kelly Donna Paul 
 LAST_NAMES = %w{Johnson Jefferson Washington Madison Adams Jackson Lincoln}
 
 shared :makedoc do
-  def makedoc
-    user = 1000 + rand(9000)
-    phone = 1000000000 + rand(8999999999)
-    ip = "172.25.25.#{rand(255)}"
-    agent_first = FIRST_NAMES[rand(FIRST_NAMES.size)]
-    agent_last =  LAST_NAMES[rand(LAST_NAMES.size)]
-    uuid = "2e831835-d336-4735-b3e5-" + Digest::MD5.hexdigest(Time.now.to_f.to_s)[0 .. 12]
-    start_epoch = 1000000000 + rand(284904211)
-    end_epoch = start_epoch + rand(400)
+  def make_uuid
+    require "securerandom"
+    SecureRandom.uuid
+  end
+
+  def makedoc(args = {})
+    user        = args[:user]         || 1000 + rand(9000)
+    phone       = args[:phone]        || 1000000000 + rand(8999999999)
+    ip          = args[:ip]           || "172.25.25.#{rand(255)}"
+    agent_first = args[:first_name]   || FIRST_NAMES[rand(FIRST_NAMES.size)]
+    agent_last  = args[:last_name]    || LAST_NAMES[rand(LAST_NAMES.size)]
+    uuid        = args[:uuid]         || make_uuid
+    start_epoch = args[:start_epoch]  || 1000000000 + rand(284904211)
+    end_epoch   = args[:end_epoch]    || start_epoch + rand(400)
+    duration    = args[:duration]     || (end_epoch - start_epoch).to_i
     doc = <<-XML
 <?xml version="1.0"?>
 <cdr>
@@ -41,6 +47,7 @@ shared :makedoc do
     <start_epoch>#{start_epoch}</start_epoch>
     <end_epoch>#{end_epoch}</end_epoch>
     <sip_from_tag>BD37552C-4B5</sip_from_tag>
+    <duration>#{duration}</duration>
   </variables>
   <app_log>
     <application app_name="set" app_data="continue_on_fail=true">
