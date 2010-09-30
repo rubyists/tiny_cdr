@@ -19,24 +19,9 @@ class MainController < Controller
     @title << " for #{username}" unless username.nil?
     avoid_locals = (request[:avoid_locals].empty? ? false : true) rescue nil
 
-    conditionals = 'username = ? or caller_id_number = ? or destination_number = ?'
-
-    filter =
-      if username && phone_num
-        [ "(#{conditionals}) and (#{conditionals})",
-          username, username, username,
-          phone_num, phone_num, phone_num ]
-      elsif username
-        [conditionals, username, username, username]
-      elsif phone_num
-        [conditionals, phone_num, phone_num, phone_num]
-      end
-    ds = (filter ? TinyCdr::Call.filter(filter) : TinyCdr::Call)
-    ds = ds.filter{start_stamp >= Date.strptime(start, "%m/%d/%Y") } if !(start.nil? or start.empty?)
-    ds = ds.filter{end_stamp <= Date.strptime(stop, "%m/%d/%Y") } if !(stop.nil? or stop.empty?)
-    ds = ds.filter("caller_id_number ~ '^\\d\\d\\d\\d\\d+$' or destination_number ~ '^\\d\\d\\d\\d\\d+$'") if avoid_locals
-    ds = ds.order(:start_stamp)
-    p ds.sql # Output the raw sql
+    ds = TinyCdr::Call.user_report(start, stop, {:username => username,
+                                                 :phone    => phone_num,
+                                                 :avoid_locals => avoid_locals})
     @calls = ds.all
 
     @total_time = @calls.inject(0) {|a,b| a + b.duration.to_i }/60

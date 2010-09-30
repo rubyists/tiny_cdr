@@ -2,11 +2,12 @@ function(doc) {
   var profile = doc.callflow.caller_profile,
       variables = doc.variables;
 
-  var valid = /^\\d{4}\\d+$/;
+  var remote = /^\d{5}/;
 
-  if(valid.test(profile.caller_id_number) &&
-     valid.test(profile.destination_number)){
-    return;
+  if(!remote.test(profile.caller_id_number)){
+    if(!remote.test(profile.destination_number)){
+      return;
+    }
   }
 
   var value = {

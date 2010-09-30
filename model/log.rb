@@ -30,13 +30,17 @@ module TinyCdr
 
     sync :log
 
-    def self.create_from_xml(xml)
+    def self.find_or_create_from_xml(xml)
       parser = LogParser.new
       Nokogiri::XML::SAX::Parser.new(parser).parse(xml)
       instance = Log.new(parser.out['cdr'])
-      instance['_id'] = instance['variables']['uuid']
-      instance.save
+      instance['_id'] = instance['callflow']['caller_profile']['uuid']
+
+      instance.save # may conflict
       return instance
+    rescue Makura::Error::Conflict => e
+      warn e
+      return self[instance['_id']]
     end
   end
 
@@ -102,6 +106,8 @@ module TinyCdr
         @keys.inject(@out){|s,v|
           if content && v == @keys.last && @buffer.any?
             s[v] = content
+          elsif v == @keys.last
+            s[v] ||= nil
           else
             s[v] ||= {}
           end
