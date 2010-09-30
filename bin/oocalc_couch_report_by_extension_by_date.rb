@@ -114,28 +114,28 @@ if $0 == __FILE__
     opts.separator ""
     opts.separator "Specific options:"
 
-    opts.on("-f", "--from [STARTDATE]", "Report from STARTDATE mm/dd/yyyy" do |from|
+    opts.on("-f", "--from [STARTDATE]", "Report from STARTDATE mm/dd/yyyy") do |from|
       options[:from] = Date.strptime(from, "%m/%d/%Y").to_time unless from.empty?
     end
 
-    opts.on("-t", "--to [STOPDATE]", "Report from STOPDATE mm/dd/yyyy" do |to|
+    opts.on("-t", "--to [STOPDATE]", "Report from STOPDATE mm/dd/yyyy") do |to|
       options[:to] = Date.strptime(to, "%m/%d/%Y").to_time unless to.empty?
     end
 
-    opts.on("-i", "--include-locals", "Include internal calls" do |include_locals|
+    opts.on("-i", "--include-locals", "Include internal calls") do |include_locals|
       options[:avoid_locals] = false if include_locals
     end
 
-    opts.on("-a", "--avoid-locals", "Exclude internal calls" do |exclude_locals|
+    opts.on("-a", "--avoid-locals", "Exclude internal calls") do |exclude_locals|
       options[:avoid_locals] = true if exclude_locals
     end
   end
 
-  exts = defopts[:exts]
-  output_file = defopts[:output_file]
-  from = defopts[:from].to_i
-  to = defopts[:to].to_i
-  avoid_locals = defopts[:avoid_locals]
+  exts = options[:exts]
+  output_file = options[:output_file]
+  from = options[:from].to_i
+  to = options[:to].to_i
+  avoid_locals = options[:avoid_locals]
   raise "Report with this name already exists: #{output_file}" if File.exists?(output_file)
 
   sheet = TinyCdr::OOReport::ByExtensionAndDate.new(from, to, :avoid_locals => avoid_locals, :extensions => exts).generate
