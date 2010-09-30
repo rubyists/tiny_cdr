@@ -97,16 +97,39 @@ end
 
 if $0 == __FILE__
   require "yaml"
+  require "optparse"
+  require "date"
+
   today = Time.now
 
-  # let's optparse this
-  defopts = {:from => Time.mktime(today.year, today.month, 1),
+  options = {:from => Time.mktime(today.year, today.month, 1),
              :output_file => "report.ods",
              :to   => Time.mktime(today.year, today.month + 1, 1),
              :exts => YAML.load(File.read(ENV["EXTENSION_LIST"])),
              :avoid_locals => true}
 
   # OptParsing goes here
+  OptionParser.new do |opts|
+    opts.banner = "Usage: #{$0} [options]"
+    opts.separator ""
+    opts.separator "Specific options:"
+
+    opts.on("-f", "--from [STARTDATE]", "Report from STARTDATE mm/dd/yyyy" do |from|
+      options[:from] = Date.strptime(from, "%m/%d/%Y").to_time unless from.empty?
+    end
+
+    opts.on("-t", "--to [STOPDATE]", "Report from STOPDATE mm/dd/yyyy" do |to|
+      options[:to] = Date.strptime(to, "%m/%d/%Y").to_time unless to.empty?
+    end
+
+    opts.on("-i", "--include-locals", "Include internal calls" do |include_locals|
+      options[:avoid_locals] = false if include_locals
+    end
+
+    opts.on("-a", "--avoid-locals", "Exclude internal calls" do |exclude_locals|
+      options[:avoid_locals] = true if exclude_locals
+    end
+  end
 
   exts = defopts[:exts]
   output_file = defopts[:output_file]
