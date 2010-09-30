@@ -1,6 +1,4 @@
 function(doc) {
-  if(doc.type != 'Log'){ return }
-
   var profile = doc.callflow.caller_profile,
       variables = doc.variables;
 
