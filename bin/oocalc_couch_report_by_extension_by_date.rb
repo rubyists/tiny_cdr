@@ -54,7 +54,7 @@ module TinyCdr
       def write_header(ext, fullname, row_count, total_talk_time)
         @sheet.header do
           @sheet.row do
-            @sheet.cell "Call Detail for #{ext} - #{fullname}", style: 'title', span: 9
+            @sheet.cell "Call Detail for #{ext} - #{fullname}", style: 'title', span: 8
           end
 
           @sheet.row do
