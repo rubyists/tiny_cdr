@@ -96,7 +96,7 @@ if $0 == __FILE__
 
   # let's optparse this
   defopts = {:from => Time.mktime(today.year, today.month, 1),
-             :output_file => "report.ods",
+             :output_file => ENV["TINYCDR_REPORT_FILE"] || "report.ods",
              :to   => Time.mktime(today.year, today.month + 1, 1),
              :exts => YAML.load(File.read(ENV["EXTENSION_LIST"])),
              :avoid_locals => true}
