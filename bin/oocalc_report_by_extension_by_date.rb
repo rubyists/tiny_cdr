@@ -68,6 +68,7 @@ module TinyCdr
             @sheet.cell 'Duration', style: 'bold'
             @sheet.cell 'Channel', style: 'bold'
             @sheet.cell 'Context', style: 'bold'
+            @sheet.cell 'Identifier', style: 'bold'
           end
         end
       end
@@ -82,6 +83,7 @@ module TinyCdr
           @sheet.numeric_cell row[:duration]
           @sheet.string_cell  row[:channel]
           @sheet.string_cell  row[:context]
+          @sheet.string_cell  row[:couch_id]
         end
       end
     end
