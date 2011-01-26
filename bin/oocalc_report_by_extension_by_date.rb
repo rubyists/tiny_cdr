@@ -1,7 +1,9 @@
 #!/usr/bin/env ruby
 require 'time'
+require 'date'
 require 'spreadsheet'
 require_relative "../model/init"
+
 
 # Installation:
 #
@@ -31,7 +33,7 @@ module TinyCdr
       def generate
         @sheet.spreadsheet do
           @exts.each do |ext, fullname|
-            ds = TinyCdr::Call.user_report(@from, @to, :username => ext)
+            ds = TinyCdr::Call.user_report(@from, @to, :username => ext, )
             rows = ds.all
             p "#{ext} #{rows.size}"
             total_talk_time = rows.inject(0){|sum, row| sum + row[:duration].to_i }/60
@@ -95,11 +97,14 @@ if $0 == __FILE__
   today = Time.now
 
   # let's optparse this
-  defopts = {:from => Time.mktime(today.year, today.month, 1),
+  from = Time.mktime(today.year, today.month, 1)
+  to = from.to_date >> 1
+  defopts = {:from => Time.mktime(from.year, from.month, 1),
              :output_file => ENV["TINYCDR_REPORT_FILE"] || "report.ods",
-             :to   => Time.mktime(today.year, today.month + 1, 1),
+             :to   => to,
              :exts => YAML.load(File.read(ENV["EXTENSION_LIST"])),
              :avoid_locals => true}
+  p defopts
 
   # OptParsing goes here
 
@@ -108,6 +113,7 @@ if $0 == __FILE__
   from = defopts[:from].strftime("%m/%d/%Y")
   to = defopts[:to].strftime("%m/%d/%Y")
   avoid_locals = defopts[:avoid_locals]
+  p [from, to]
   raise "Report with this name already exists: #{output_file}" if File.exists?(output_file)
 
   sheet = TinyCdr::OOReport::ByExtensionAndDate.new(from, to, :avoid_locals => avoid_locals, :extensions => exts).generate

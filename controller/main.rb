@@ -17,10 +17,14 @@ class MainController < Controller
     phone_num = nil if phone_num.empty?
     @title = "Call Detail"
     @title << " for #{username}" unless username.nil?
+    queue_only = (request[:queue_only].empty? ? false : true) rescue nil
     avoid_locals = (request[:avoid_locals].empty? ? false : true) rescue nil
+    locals_only = (request[:locals_only].empty? ? false : true) rescue nil
 
     ds = TinyCdr::Call.user_report(start, stop, {:username => username,
                                                  :phone    => phone_num,
+                                                 :queue_only    => queue_only,
+                                                 :locals_only    => locals_only,
                                                  :avoid_locals => avoid_locals})
     @calls = ds.all
 
@@ -32,7 +36,7 @@ class MainController < Controller
     view = request[:avoid_locals] ? 'call_detail_avoid_locals' : 'call_detail'
 
     @calls = Makura::Model.database.view(
-      "report/_view/#{view}",
+      "log/_view/#{view}",
       startkey: [request[:username], Time.strptime(request[:date_start], '%m/%d/%Y').to_i],
       endkey: [request[:username], Time.strptime(request[:date_end], '%m/%d/%Y').to_i]
     )['rows'].map{|row| row['value'] }

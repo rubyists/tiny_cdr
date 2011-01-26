@@ -30,24 +30,33 @@ module TinyCdr
     # @avoid_locals - true if you don't want to see ext to ext calls
     # @conditions - may include :username or :phone
     def self.user_report(start, stop, conditions = {})
-      conditionals = 'username = ? or caller_id_number = ? or destination_number = ?'
+      conditionals = 'username in ? or caller_id_number in ? or destination_number in ?'
       username = conditions[:username]
       phone_num = conditions[:phone]
-      avoid_locals = conditions.keys.include?(:avoid_locals) ? conditions[:avoid_locals] : true
-      filters =
-        if username && phone_num
-          [ "(#{conditionals}) and (#{conditionals})",
-            username, username, username,
-            phone_num, phone_num, phone_num ]
-        elsif username
-          [conditionals, username, username, username]
-        elsif phone_num
-          [conditionals, phone_num, phone_num, phone_num]
+      avoid_locals = conditions.keys.include?(:avoid_locals) ? conditions[:avoid_locals] : false # default to false
+      queue_only = conditions.keys.include?(:queue_only) ? conditions[:queue_only] : false # default to false
+      locals_only = conditions.keys.include?(:locals_only) ? conditions[:locals_only] : false # default to false
+      usernames = username.split(",") rescue []
+      phone_nums = phone_num.split(",") rescue []
+      filters = if usernames.size > 0
+        if phone_nums.size > 0
+          ["(#{conditionals}) and (#{conditionals})", usernames, usernames, usernames, phone_nums, phone_nums, phone_nums]
+        else
+          ["(#{conditionals})", usernames, usernames, usernames]
         end
+      elsif phone_nums.size > 0
+        ["(#{conditionals})", phone_nums, phone_nums, phone_nums]
+      end
       ds = (filters ? TinyCdr::Call.filter(filters) : TinyCdr::Call)
-      ds = ds.filter{start_stamp >= Date.strptime(start, "%m/%d/%Y") } if !(start.nil? or start.empty?)
-      ds = ds.filter{end_stamp <= Date.strptime(stop, "%m/%d/%Y") } if !(stop.nil? or stop.empty?)
+      unless start.nil?
+        start.kind_of?(Date) ?  (ds = ds.filter { start_stamp >= start }) : (ds = ds.filter{start_stamp >= Date.strptime(start, "%m/%d/%Y") })
+      end
+      unless stop.nil?
+        stop.kind_of?(Date) ? (ds = ds.filter {end_stamp <= stop }) : (ds = ds.filter{end_stamp <= Date.strptime(stop, "%m/%d/%Y") })
+      end
       ds = ds.filter("caller_id_number ~ '^\\d\\d\\d\\d\\d+$' or destination_number ~ '^\\d\\d\\d\\d\\d+$'") if avoid_locals
+      ds = ds.filter("caller_id_number ~ '^\\d\\d\\d\\d$' and destination_number ~ '^\\d\\d\\d\\d$'") if locals_only
+      ds = ds.filter("channel ~ '192.168.6.118$'") if queue_only
       ds.order(:start_stamp)
     end
 

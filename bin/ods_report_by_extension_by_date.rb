@@ -11,14 +11,15 @@ module TinyCdr
         require 'yaml'
 
         options = {
-          out: ENV['TINYCDR_REPORT_FILE'] || 'report.ods',
+          out_pg: ENV['TINYCDR_REPORT_FILE'] || 'pg_tiny_cdr_report.ods',
+          out_couch: ENV['TINYCDR_REPORT_FILE'] || 'couch_tiny_cdr_report.ods',
           in: ENV['EXTENSION_LIST'] || 'extensions.yaml',
           avoid_locals: true,
           generate: {},
         }
 
-        op = OptionParser.new{|o|
-          o.on('-i', '--in FILE', "Read exts from this file (#{options[:out]}") do |file|
+        op = OptionParser.new do |o|
+          o.on('-i', '--in FILE', "Read exts from this file (#{options[:in]}") do |file|
             options[:in] = file
           end
 
@@ -41,16 +42,19 @@ module TinyCdr
           o.on('-p', '--postgres FILE', 'Generate PostgreSQL report and store in FILE') do |file|
             options[:generate][:generate_from_postgresql] = file
           end
-        }
+        end
 
-        if argv.empty?
+        if argv.nil? || argv.empty?
           puts op
           exit 1
         else
           op.parse(argv)
         end
 
-        options[:out] = File.expand_path(options[:out])
+        if options[:generate] == {}
+          options[:generate][:generate_from_couchdb] = options[:out_couch]
+          options[:generate][:generate_from_postgresql] = options[:out_pg]
+        end
         options[:in] = File.expand_path(options[:in])
 
         now = Time.now
@@ -58,15 +62,16 @@ module TinyCdr
         options[:to] ||= Time.new(from.year, from.month + 1, 1)
         options[:exts] = YAML.load_file(options[:in])
 
-        unless File.exists?(options[:out])
-          puts options
-          raise "Report with this name already exists: #{options[:out]}"
-        end
 
         require 'spreadsheet'
         require_relative "../model/init"
+        options[:db] = Makura::Model.database
+        p options[:db]
 
         options[:generate].each do |method, destination|
+          if File.exists?(destination)
+            raise "Report with this name already exists: #{destination}"
+          end
           sheet = send(method, options)
 
           File.open(destination, 'wb+') do |file|
@@ -110,8 +115,8 @@ module TinyCdr
           options[:exts].each do |ext, fullname|
             rows = options[:db].view(
               'log/_view/call_detail_avoid_locals',
-              startkey: [ext, options[:from].to_i],
-              endkey: [ext, options[:to].to_i]
+              startkey: [ext, options[:from].to_time.to_i],
+              endkey: [ext, options[:to].to_time.to_i]
             )['rows']
 
             p "#{ext} #{rows.size}"
@@ -144,9 +149,10 @@ module TinyCdr
       end
 
       def generate_from_postgresql(options)
+        sheet = Spreadsheet::Builder.new
         sheet.spreadsheet do
           options[:exts].each do |ext, fullname|
-            rows = options[:model].user_report(
+            rows = TinyCdr::Call.user_report(
               options[:from], options[:to], :username => ext
             ).all
 
@@ -157,7 +163,7 @@ module TinyCdr
             } / 60
 
             sheet.table "#{ext} - #{fullname}" do
-              write_header ext, fullname, rows.size, total_talk_time
+              write_header sheet, ext, fullname, rows.size, total_talk_time
               rows.each do |row|
                 sheet.row do
                   sheet.string_cell  row[:caller_id_number]
