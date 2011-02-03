@@ -24,8 +24,8 @@
     <td><%= call['caller_id_number'] %></td>
     <td><%= call['caller_id_name'] %></td>
     <td><%= call['destination_number'] %></td>
-    <td><%= Time.at(call['start']).strftime("%m-%d-%Y %H:%M:%S") %></td>
-    <td><%= Time.at(call['end']).strftime("%m-%d-%Y %H:%M:%S") %></td>
+    <td><%= Time.at(call['start'].to_i).strftime("%m/%d/%Y %H:%M:%S") %></td>
+    <td><%= Time.at(call['end'].to_i).strftime("%m/%d/%Y %H:%M:%S") %></td>
     <td><%= call['duration'] %></td>
     <td><%= call['chan_name'] %></td>
     <td><%= call['context'] %></td>

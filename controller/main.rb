@@ -12,17 +12,18 @@ class MainController < Controller
 
   def user_report
     start, stop = request[:date_start, :date_end]
-    username, phone_num = request[:username, :phone_num].map{|s| s.to_s.strip }
+    username, phone_number = request[:username, :phone_number].map{|s| s.to_s.strip }
     username = nil if username.empty?
-    phone_num = nil if phone_num.empty?
+    phone_number = nil if phone_number.empty?
     @title = "Call Detail"
     @title << " for #{username}" unless username.nil?
+    @title << " for #{phone_number}" unless phone_number.nil?
     queue_only = (request[:queue_only].empty? ? false : true) rescue nil
     avoid_locals = (request[:avoid_locals].empty? ? false : true) rescue nil
     locals_only = (request[:locals_only].empty? ? false : true) rescue nil
 
     ds = TinyCdr::Call.user_report(start, stop, {:username => username,
-                                                 :phone    => phone_num,
+                                                 :phone    => phone_number,
                                                  :queue_only    => queue_only,
                                                  :locals_only    => locals_only,
                                                  :avoid_locals => avoid_locals})
