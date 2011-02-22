@@ -97,7 +97,12 @@ if $0 == __FILE__
   today = Time.now
 
   # let's optparse this
-  from = Time.mktime(today.year, today.month, 1)
+  if ENV["TINYCDR_MONTH_YEAR"]
+    year,month = ENV["TINYCDR_MONTH_YEAR"].chomp.split("-").map { |n| n.to_i }
+    from = Time.mktime(year, month, 1)
+  else
+    from = Time.mktime(today.year, today.month, 1)
+  end
   to = from.to_date >> 1
   defopts = {:from => Time.mktime(from.year, from.month, 1),
              :output_file => ENV["TINYCDR_REPORT_FILE"] || "report.ods",
