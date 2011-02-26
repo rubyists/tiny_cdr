@@ -6,6 +6,7 @@
 # Distributed under the terms of the MIT license.
 # The full text can be found in the LICENSE file included with this software
 #
+require_relative "../../options"
 begin
   require "sequel"
 rescue LoadError
@@ -43,18 +44,18 @@ module TinyCdr
     end
 
     db =  dbs[database] || dbs['*']
-    if db 
+    if db
       chosen = db.reject{|k,v| !v || v == '*' }
       defaults.merge(chosen)
     else
-      fail("Either #{database}, *, or db named in APP_DB not found in .pgpass")
+      fail("Either #{database}, *, or db named in TinyCdr_PgDB not found in .pgpass")
     end
   end
 
   def self.setup_db(root = TinyCdr::ROOT, default_app = 'tiny_cdr')
     return @@db if @@db
 
-    app_db  = ENV["APP_DB"]  || default_app
+    app_db  = TinyCdr.options.pg_dbname
     app_env = ENV["APP_ENV"] || "development"
     root_pgpass = root/".pgpass"
     home_pgpass = Pathname('~/.pgpass').expand_path
