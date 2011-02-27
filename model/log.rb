@@ -30,11 +30,11 @@ module TinyCdr
 
     sync :log
 
-    def self.find_or_create_from_xml(xml)
+    def self.find_or_create_from_xml(uuid, xml)
       parser = LogParser.new
       Nokogiri::XML::SAX::Parser.new(parser).parse(xml)
       instance = Log.new(parser.out['cdr'])
-      instance['_id'] = instance['callflow']['caller_profile']['uuid']
+      instance['_id'] = uuid
 
       instance.save # may conflict
       return instance
