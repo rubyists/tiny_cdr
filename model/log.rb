@@ -54,8 +54,11 @@ module TinyCdr
 
     def start_element(name, attrs = [])
       @keys << name
-      @attrs = Hash[*attrs]
+      @attrs = (Hash[*attrs] rescue Hash[attrs])
       @buffer = []
+    rescue ArgumentError => e
+      Ramaze::Log.error e
+      Ramaze::Log.error attrs
     end
 
     def characters(string)

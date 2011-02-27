@@ -1,9 +1,8 @@
 module TinyCdr
   class Call < Sequel::Model
     set_dataset TinyCdr.db[:calls]
-    def self.create_from_xml(uuid, xml)
+    def self.create_from_xml(uuid, leg, xml)
 
-      a_leg = uuid[0,2] == 'a_'
       # convert to JSON and store in CouchDB
       log = TinyCdr::Log.find_or_create_from_xml(uuid, xml)
 
@@ -22,7 +21,7 @@ module TinyCdr
           :duration           => log.variables["duration"],
           :billsec            => log.variables["billsec"]
         }
-        if a_leg
+        if leg == 'a'
           create call
         else
           new call
