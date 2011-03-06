@@ -3,7 +3,10 @@ module TinyCdr
     set_dataset TinyCdr.db[:calls]
     def self.create_from_xml(uuid, xml, leg = nil)
 
-      leg = 'a' if uuid[0,2] == 'a_'
+      if uuid[0,2] == 'a_'
+        leg = 'a' 
+        uuid = uuid[2..-1]
+      end
       # convert to JSON and store in CouchDB
       log = TinyCdr::Log.find_or_create_from_xml(uuid, xml)
 
