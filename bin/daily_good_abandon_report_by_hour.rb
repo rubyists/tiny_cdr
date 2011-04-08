@@ -16,27 +16,32 @@ puts uri
 call_details = JSON.parse(open(uri).read)["rows"].map { |cdr| cdr["doc"] }
 h = {}
 call_details.map do |call|
- variables = call["variables"]
-# puts "queue is #{variables["cc_queue"]} billsec is #{variables["billsec"]} duration is #{variables["duration"]}" if (variables["billsec"] == 0)
- dropped_call = variables["cc_queue_canceled_epoch"] ? 1 : 0 #  (variables["duration"] > 0 && variables["billsec"] == 0) ? 1 : 0
- h[[Time.at(variables["cc_queue_joined_epoch"]).hour, variables["cc_queue"]]] ||= [] 
- h[[Time.at(variables["cc_queue_joined_epoch"]).hour, variables["cc_queue"]]] << [1, dropped_call]  
+  variables = call["variables"]
+  queue, joined, cancelled = variables.values_at("cc_queue", "cc_queue_joined_epoch", "cc_queue_canceled_epoch")
+  #  puts "queue is #{variables["cc_queue"]} billsec is #{variables["billsec"]} duration is #{variables["duration"]}" if (variables["billsec"] == 0)
+  dropped_call = cancelled ? 1 : 0 #  (variables["duration"] > 0 && variables["billsec"] == 0) ? 1 : 0
+  time = Time.at(joined)
+  if cancelled
+    File.open("/tmp/cancelled_#{variables["cc_queue"]}_#{time.strftime("%Y%m%d-%H")}.json", "a+") { |f| f.puts call.to_json }
+  end
+  h[[time.hour, queue]] ||= [] 
+  h[[time.hour, queue]] << [1, dropped_call, variabled["duration"]]  
   # start building rows for each hr
   #line = []
- end
- lines = []
- h.keys.sort.map do |hourqueue|
-    hc_total, dropped_total = 0,0
-    h[hourqueue].map do |data|
-      hc_total+=data[0]
-      dropped_total+=data[1]
-    end
-    lines << [hourqueue,hc_total, dropped_total].flatten!
- end
+end
+  lines = []
+  h.keys.sort.map do |hourqueue|
+     hc_total, dropped_total = 0,0
+     h[hourqueue].map do |data|
+       hc_total+=data[0]
+       dropped_total+=data[1]
+     end
+     lines << [hourqueue,hc_total, dropped_total].flatten!
+  end
 
- CSV.open("/tmp/InboundHourly#{year}-#{month}#{day}.csv","w") do |csv|
-  csv << ["Hr","Queue","Total Inbound","Dropped"]
- lines.map do |l|
-  csv << [Time.local(year,month,day,l[0]).strftime("%D %I:%M%p"),l[1],l[2],l[3]]
- end
+  CSV.open("/tmp/InboundHourly#{year}-#{month}#{day}.csv","w") do |csv|
+    csv << ["Hr","Queue","Total Inbound","Dropped"]
+  lines.map do |l|
+    csv << [Time.local(year,month,day,l[0]).strftime("%D %I:%M%p"),l[1],l[2],l[3]]
+  end
 end
