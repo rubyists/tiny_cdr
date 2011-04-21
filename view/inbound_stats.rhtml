@@ -1,0 +1,29 @@
+<table>
+  <tr>
+    <th>Total Calls</th>
+    <td class="total_calls"><%= @calls.size %></td>
+  </tr>
+</table>
+<table>
+  <tr>
+   <% if @calls then %> 
+       <a href=<%="file:///#{@filename}"%>/>click here to download report</a>
+       <a href="file:///tmp/callstuff.zip"/>cancelled calls</a>
+   <% end %>
+  </tr>
+  <tr>
+    <th>Hour</th>
+    <th>Queue</th>
+    <th>Inbound Calls</th>
+    <th>Dropped Calls</th>
+    <th></th>
+  </tr>
+  <% @calls.each do |call| %>
+  <tr>
+    <td class="start"><%= call[0] %></td>
+    <td class="channel"><%= call[1] %></td>
+    <td class="context"><%= call[3] %></td>
+    <td class="duration"><%= call[4] %></td>
+  </tr>
+  <% end %>
+</table>

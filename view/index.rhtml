@@ -18,3 +18,12 @@
     <input type="submit"/>
   </fieldset>
 </form>
+
+<form method="get" action="<%= r(:inbound_stats) %>">
+  <fieldset>
+    <legend>Inbound call hourly Queue-wise Report</legend>
+    <label for="argdate">Report Date:</label>
+    <input type="text" id="argdate" name="argdate" class="datepicker"/>
+    <input type="submit"/>
+  </fieldset>
+</form> 

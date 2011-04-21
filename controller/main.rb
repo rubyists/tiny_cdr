@@ -1,4 +1,5 @@
 require 'date'
+require File.dirname(__FILE__) + '/../lib/daily_good_abandon_report_by_hour.rb'
 class MainController < Controller
   layout :main
   helper :xhtml
@@ -8,6 +9,21 @@ class MainController < Controller
   def index
     @head  = '<script type="text/javascript" src="/js/index.js"></script>'
     @title = "TinyCDR - FreeSWITCH CDR Reporting"
+  end
+
+  def give_file
+    filename = request[:filename]   
+    render_file(filename,:content_type => "application/excel" )
+  end
+
+  def inbound_stats
+    start = request[:argdate]
+    @title = "Hourly Incoming Dropped Call Report"
+    @title << " for #{start}" unless start.nil?
+    fstr = (Date.strptime(start,"%m/%d/%Y")||Date.today).strftime("%Y%m%d")
+    @filename = "/tmp/InboundHourly#{fstr}.csv"
+    rep = DailyGoodAbandonReportByHour.new(:argdate => start)    
+    @calls = rep.create_report(@filename)
   end
 
   def user_report
