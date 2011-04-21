@@ -27,6 +27,7 @@ class DailyGoodAbandonReportByHour
     uri = "http://jupiter:5984/tiny_cdr/_design/log/_view/hourly_report_detail?startKey=#{day_start_epoch}&endKey=#{@day_end_epoch}&include_docs=true"
     puts uri
     call_details = JSON.parse(open(uri).read)["rows"].map { |cdr| cdr["doc"] }
+    f = File.open("/tmp/cancelled_callids.html", "a+") 
     h = {}
     call_details.map do |call|
       variables = call["variables"]
@@ -41,11 +42,13 @@ class DailyGoodAbandonReportByHour
           when 6..10 then cancelled_categories[1] = 1
           else cancelled_categories[2] = 1
         end
-        File.open("/tmp/cancelled_#{variables["cc_queue"]}_#{time.strftime("%Y%m%d-%H")}.json", "a+") { |f| f.puts call.to_json }
+        s = "<a href=\"http://jupiter:5984/_utils/document.html?tiny_cdr/#{call["_id"]}\" >check#{variables["cc_queue"]}_#{time.hour}</a>"  
+        f.puts s
       end
       h[[time.hour, queue]] ||= [] 
       h[[time.hour, queue]] << [1, dropped_call, cancelled_categories ].flatten  
 
+=begin
       # zip and delete
       cmd = "zip /tmp/callstuff /tmp/cancelled*.json"
       puts %x{#{cmd}}
@@ -54,11 +57,11 @@ class DailyGoodAbandonReportByHour
          delcmd = "rm /tmp/cancel*.json"
          puts %x{#{delcmd}}
       end
-
+=end
       # start building rows for each hr
-      #line = []
     end
-      lines = []
+   f.close    
+  lines = []
       h.keys.sort.map do |hourqueue|
          hc_total, dropped_total,l5,l10,others = 0,0,0,0,0,0
          h[hourqueue].map do |data|

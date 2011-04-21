@@ -22,6 +22,7 @@ class MainController < Controller
     @title << " for #{start}" unless start.nil?
     fstr = (Date.strptime(start,"%m/%d/%Y")||Date.today).strftime("%Y%m%d")
     @filename = "/tmp/InboundHourly#{fstr}.csv"
+    @tempfilename = "tmp/cancelled_callids.html"
     rep = DailyGoodAbandonReportByHour.new(:argdate => start)    
     @calls = rep.create_report(@filename)
   end
