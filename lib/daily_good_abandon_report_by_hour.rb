@@ -42,7 +42,7 @@ class DailyGoodAbandonReportByHour
           when 6..10 then cancelled_categories[1] = 1
           else cancelled_categories[2] = 1
         end
-        s = "<a href=\"http://jupiter:5984/_utils/document.html?tiny_cdr/#{call["_id"]}\" >check#{variables["cc_queue"]}_#{time.hour}</a>"  
+        s = "<a href=\"http://jupiter:5984/_utils/document.html?tiny_cdr/#{call["_id"]}\" >check#{variables["cc_queue"]}_#{time.hour}</a><br>"  
         f.puts s
       end
       h[[time.hour, queue]] ||= [] 
