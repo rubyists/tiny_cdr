@@ -1,14 +1,18 @@
 module TinyCdr
   class Call < Sequel::Model
     set_dataset TinyCdr.db[:calls]
-    def self.create_from_xml(xml)
+    def self.create_from_xml(uuid, xml, leg = nil)
 
+      if uuid[0,2] == 'a_'
+        leg = 'a' 
+        uuid = uuid[2..-1]
+      end
       # convert to JSON and store in CouchDB
-      log = TinyCdr::Log.find_or_create_from_xml(xml)
+      log = TinyCdr::Log.find_or_create_from_xml(uuid, xml)
 
       unless self.find(:couch_id => log._id)
-        # Store basic data in a postgres record
-        create(
+        # Store basic data in a postgres record, or send a new one if it's a b_leg
+        call = {
           :couch_id           => log._id,
           :username           => log.callflow["caller_profile"]["username"],
           :caller_id_number   => log.callflow["caller_profile"]["caller_id_number"],
@@ -20,7 +24,12 @@ module TinyCdr
           :end_stamp          => Time.at(log.variables["end_epoch"]),
           :duration           => log.variables["duration"],
           :billsec            => log.variables["billsec"]
-        )
+        }
+        if leg == 'a'
+          create call
+        else
+          new call
+        end
       end
 
     end
