@@ -103,7 +103,11 @@ if $0 == __FILE__
   else
     from = Time.mktime(today.year, today.month, 1)
   end
-  to = from.to_date >> 1
+  to = if ENV["TINYCDR_STOP_DATE"]
+         Date.parse(ENV["TINYCDR_STOP_DATE"])
+       else
+         from.to_date >> 1
+       end
   defopts = {:from => Time.mktime(from.year, from.month, 1),
              :output_file => ENV["TINYCDR_REPORT_FILE"] || "report.ods",
              :to   => to,

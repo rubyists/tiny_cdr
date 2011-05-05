@@ -56,7 +56,7 @@ module TinyCdr
       end
       ds = ds.filter("caller_id_number ~ '^\\d\\d\\d\\d\\d+$' or destination_number ~ '^\\d\\d\\d\\d\\d+$'") if avoid_locals
       ds = ds.filter("caller_id_number ~ '^\\d\\d\\d\\d$' and destination_number ~ '^\\d\\d\\d\\d$'") if locals_only
-      ds = ds.filter("channel ~ '192.168.6.118$'") if queue_only
+      ds = ds.filter("channel ~ '192.168.6.118$' or channel ~ '192.168.6.37$'") if queue_only
       ds.order(:start_stamp)
     end
 
