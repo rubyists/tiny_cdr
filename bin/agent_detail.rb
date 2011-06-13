@@ -21,7 +21,7 @@ require_relative "../model/init"
 # Need to pull this from a file (later db)
 module TinyCdr
   module OOReport
-    class ByExtensionAndDate
+    class AgentDetail
       def initialize(start, stop, options = {})
 
         @sheet = Spreadsheet::Builder.new
@@ -41,18 +41,15 @@ module TinyCdr
             @sheet.table "#{ext} - #{fullname}" do
               write_header ext, fullname, rows.size, total_talk_time
               rows.each { |row| write_row row }
+              write_footer ext, fullname, rows.size, total_talk_time
             end
           end
         end
         @sheet
       end
 
-      def write_header(ext, fullname, row_count, total_talk_time)
-        @sheet.header do
-          @sheet.row do
-            @sheet.cell "Call Detail for #{ext} - #{fullname}", style: 'title', span: 9
-          end
-
+      def write_footer(ext, fullname, row_count, total_talk_time)
+        #@sheet.footer do
           @sheet.row do
             @sheet.cell 'Total Calls', style: 'bold'
             @sheet.numeric_cell row_count
@@ -60,7 +57,11 @@ module TinyCdr
             @sheet.cell 'Total Talk Time', style: 'bold'
             @sheet.numeric_cell total_talk_time
           end
+        #end
+      end
 
+      def write_header(ext, fullname, row_count, total_talk_time)
+        @sheet.header do
           @sheet.row do
             @sheet.cell 'CID Number', style: 'bold'
             @sheet.cell 'CID Name', style: 'bold'
@@ -96,11 +97,11 @@ if $0 == __FILE__
   require "yaml"
   today = Time.now
   if start_day = ENV["TINYCDR_DAY"]
-    puts "Using #{start_day} for start day"
     start_day = start_day.to_i
   else
-    start_day = 1
+    start_day = today.day
   end
+  puts "Using #{start_day} for start day"
   # let's optparse this
   if ENV["TINYCDR_MONTH_YEAR"]
     year,month = ENV["TINYCDR_MONTH_YEAR"].chomp.split("-").map { |n| n.to_i }
@@ -114,7 +115,7 @@ if $0 == __FILE__
          from.to_date >> 1
        end
   defopts = {:from => Time.mktime(from.year, from.month, start_day),
-             :output_file => ENV["TINYCDR_REPORT_FILE"] || "report.ods",
+             :output_file => ENV["TINYCDR_REPORT_FILE"] || "agent_detail_#{from.strfime("%Y-%m-%d")}_#{today.strftime("%H:%M")}.ods",
              :to   => to,
              :exts => YAML.load(File.read(ENV["EXTENSION_LIST"])),
              :avoid_locals => true}
@@ -130,7 +131,7 @@ if $0 == __FILE__
   p [from, to]
   raise "Report with this name already exists: #{output_file}" if File.exists?(output_file)
 
-  sheet = TinyCdr::OOReport::ByExtensionAndDate.new(from, to, :avoid_locals => avoid_locals, :extensions => exts).generate
+  sheet = TinyCdr::OOReport::AgentDetail.new(from, to, :avoid_locals => avoid_locals, :extensions => exts).generate
   File.open(output_file, 'wb+') do |f|
     f.write sheet.content!
   end
