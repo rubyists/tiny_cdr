@@ -41,37 +41,26 @@ module TinyCdr
             @sheet.table "#{ext} - #{fullname}" do
               write_header ext, fullname, rows.size, total_talk_time
               rows.each { |row| write_row row }
-              write_footer ext, fullname, rows.size, total_talk_time
             end
           end
         end
         @sheet
       end
 
-      def write_footer(ext, fullname, row_count, total_talk_time)
-        #@sheet.footer do
+      def write_header(ext, fullname, row_count, total_talk_time)
+        @sheet.header do
           @sheet.row do
+            @sheet.cell 'CID Number', style: 'bold'
+            @sheet.cell 'Destination Number', style: 'bold'
+            @sheet.cell 'Start', style: 'bold'
+            @sheet.cell 'End', style: 'bold'
+            @sheet.cell 'Duration', style: 'bold'
+            @sheet.cell ""
             @sheet.cell 'Total Calls', style: 'bold'
             @sheet.numeric_cell row_count
 
             @sheet.cell 'Total Talk Time', style: 'bold'
             @sheet.numeric_cell total_talk_time
-          end
-        #end
-      end
-
-      def write_header(ext, fullname, row_count, total_talk_time)
-        @sheet.header do
-          @sheet.row do
-            @sheet.cell 'CID Number', style: 'bold'
-            @sheet.cell 'CID Name', style: 'bold'
-            @sheet.cell 'Destination Number', style: 'bold'
-            @sheet.cell 'Start', style: 'bold'
-            @sheet.cell 'End', style: 'bold'
-            @sheet.cell 'Duration', style: 'bold'
-            @sheet.cell 'Channel', style: 'bold'
-            @sheet.cell 'Context', style: 'bold'
-            @sheet.cell 'Identifier', style: 'bold'
           end
         end
       end
@@ -79,14 +68,10 @@ module TinyCdr
       def write_row(row)
         @sheet.row do
           @sheet.string_cell  row[:caller_id_number]
-          @sheet.string_cell  row[:caller_id_name]
           @sheet.string_cell  row[:destination_number]
           @sheet.string_cell  Time.at(row[:start_stamp]).strftime("%m/%d/%Y %H:%M:%S")
           @sheet.string_cell  Time.at(row[:end_stamp]).strftime("%m/%d/%Y %H:%M:%S")
           @sheet.numeric_cell row[:duration]
-          @sheet.string_cell  row[:channel]
-          @sheet.string_cell  row[:context]
-          @sheet.string_cell  row[:couch_id]
         end
       end
     end
@@ -115,7 +100,7 @@ if $0 == __FILE__
          from.to_date >> 1
        end
   defopts = {:from => Time.mktime(from.year, from.month, start_day),
-             :output_file => ENV["TINYCDR_REPORT_FILE"] || "agent_detail_#{from.strfime("%Y-%m-%d")}_#{today.strftime("%H:%M")}.ods",
+             :output_file => ENV["TINYCDR_REPORT_FILE"] || "agent_detail_#{from.strftime("%Y-%m-%d")}_#{today.strftime("%H:%M")}.ods",
              :to   => to,
              :exts => YAML.load(File.read(ENV["EXTENSION_LIST"])),
              :avoid_locals => true}
