@@ -1,13 +1,11 @@
 require 'ramaze'
+require 'nokogiri'
+require 'makura'
+require 'sequel'
+require 'erubis'
+
 require_relative "./lib/tiny_cdr"
 require_relative "./options"
-
-Ramaze.setup do
-  gem 'nokogiri'
-  gem 'makura'
-  gem 'sequel'
-  gem 'erubis'
-end
 
 # Initialize controllers and models
 require_relative 'controller/init'

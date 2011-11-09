@@ -1,0 +1,10 @@
+# .gems generated gem export file. Note that any env variable settings will be missing. Append these after using a ';' field separator
+erubis -v2.7.0
+innate -v2011.10
+makura -v2011.01.21
+mime-types -v1.17.2
+nokogiri -v1.5.0
+rack -v1.3.5
+ramaze -v2011.10.23
+rest-client -v1.6.7
+sequel -v3.29.0
