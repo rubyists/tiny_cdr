@@ -4,13 +4,13 @@ Class.new Sequel::Migration do
     alter_table :calls do
       add_column :duration_s, String
     end
-    uds = DB["UPDATE calls SET duration_s = duration"]
+    uds = TinyCdr.db["UPDATE calls SET duration_s = duration"]
     uds.update
     alter_table :calls do
       drop_column :duration
       add_column :duration, Integer
     end
-    uds = DB["UPDATE calls SET duration = duration_s::text::integer"]
+    uds = TinyCdr.db["UPDATE calls SET duration = duration_s::text::integer"]
     uds.update
     alter_table :calls do
       drop_column :duration_s
@@ -21,13 +21,13 @@ Class.new Sequel::Migration do
     alter_table :calls do
       add_column :duration_s, String
     end
-    uds = DB["UPDATE calls SET duration_s = duration::text"]
+    uds = TinyCdr.db["UPDATE calls SET duration_s = duration::text"]
     uds.update
     alter_table :calls do
       drop_column :duration
       add_column :duration, String
     end
-    uds = DB["UPDATE calls SET duration = duration_s"]
+    uds = TinyCdr.db["UPDATE calls SET duration = duration_s"]
     uds.update
     alter_table :calls do
       drop_column :duration_s

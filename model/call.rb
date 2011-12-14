@@ -4,7 +4,7 @@ module TinyCdr
     def self.create_from_xml(uuid, xml, leg = nil)
 
       if uuid[0,2] == 'a_'
-        leg = 'a' 
+        leg = 'a'
         uuid = uuid[2..-1]
       end
       # convert to JSON and store in CouchDB
@@ -25,11 +25,7 @@ module TinyCdr
           :duration           => log.variables["duration"],
           :billsec            => log.variables["billsec"]
         }
-        if leg == 'a'
-          create call
-        else
-          new call
-        end
+        create call
       end
 
     end

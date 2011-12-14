@@ -1,3 +1,4 @@
+require "makura"
 module TinyCdr
   class Log
     include Makura::Model

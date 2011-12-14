@@ -1,17 +1,16 @@
 require_relative "../../../lib/tiny_cdr"
 require_relative "../../db_helper"
 require_relative "../../cdr_data"
-require_relative "../../../model/call"
-
-
-require_relative "../../../model/log"
+require_relative "../../../model/init"
 
 shared :call_spec do
   behaves_like :makedoc
 
   def bulk_insert(n)
     calls = Array.new(n){
-      TinyCdr::Call.create_from_xml(makedoc)
+      doc = makedoc
+      uuid = (Nokogiri(doc)/:uuid).first.text
+      TinyCdr::Call.create_from_xml(uuid, makedoc)
     }
   end
 end
