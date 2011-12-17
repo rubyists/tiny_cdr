@@ -1,85 +1,75 @@
-# Copyright (c) 2008-2009 The Rubyists, LLC (effortless systems) <rubyists@rubyists.com>
-# Distributed under the terms of the MIT license.
-# See the LICENSE file which accompanies this software for the full text
-#
-# Copyright (c) 2008-2009 The Rubyists, LLC (effortless systems) <rubyists@rubyists.com>
-# Distributed under the terms of the MIT license.
-# The full text can be found in the LICENSE file included with this software
-#
+require 'sequel'
+require 'logger'
+require 'fileutils'
 require_relative "../../options"
-begin
-  require "sequel"
-rescue LoadError
-  require "rubygems"
-  require "sequel"
-end
-require "logger"
 
 module TinyCdr
-  unless defined?(@@db)
-    @@db = nil
-  end
+  @db = nil
 
-  def self.db
-    setup_db
-  end
+  class << self
+    attr_writer :db
 
-  def self.db=(other)
-    @@db = other
-  end
-
-  private
-
-  def self.parse_pgpass(file, database)
-    dbs = {}
-
-    defaults = {
-      host: "localhost", port: 5432, db: database,
-      user: ENV["USER"], password: nil
-    }
-
-    file.readlines.each do |line|
-      chunks = line.strip.split(/:/)
-      dbs[chunks[2]] = Hash[defaults.keys.zip(chunks)]
+    def db
+      @db ||= setup_db
     end
 
-    db =  dbs[database] || dbs['*']
-    if db
-      chosen = db.reject{|k,v| !v || v == '*' }
-      defaults.merge(chosen)
-    else
-      fail("Either #{database}, *, or db named in TinyCdr_PgDB not found in .pgpass")
-    end
-  end
-
-  def self.setup_db(root = TinyCdr::ROOT, default_app = 'tiny_cdr')
-    return @@db if @@db
-
-    app_db  = TinyCdr.options.pg_dbname
-    app_env = ENV["APP_ENV"] || "development"
-    root_pgpass = root/".pgpass"
-    home_pgpass = Pathname('~/.pgpass').expand_path
-
-    if root_pgpass.file?
-      conn = parse_pgpass(root_pgpass, app_db)
-    elsif home_pgpass.file?
-      conn = parse_pgpass(home_pgpass, app_db)
-    else
-      msg = "You have no %p or %p, can't determine connection"
-      fail(msg % [root_pgpass.to_s, home_pgpass.to_s])
+    def setup_db(name = options.pg_dbname)
+      self.db = ::Sequel.postgres(name, parse_pgpass(name))
     end
 
-    logfile = root/:log/"#{app_env}.log"
-    logfile.parent.mkpath
-    logger = ::Logger.new(logfile)
+    def setup_loggers
+      path = File.expand_path("../../../log", __FILE__)
+      FileUtils.mkdir_p(path)
+      file = "#{path}/#{ENV['APP_ENV'] || 'development'}.log"
+      [::Logger.new(file)]
+    end
 
-    if app_db.nil?
-      logger.debug("setup_db called but no database defined")
-      @@db = nil
-    else
-      logger.info("Connecting to #{app_db}")
-      conn[:logger] = logger
-      @@db = ::Sequel.postgres(app_db, conn)
+    def parse_pgpass(demanded_database)
+      options = {
+        host: 'localhost',
+        port: 5432,
+        user: ENV['USER'],
+        password: nil,
+        loggers: setup_loggers,
+      }
+
+      available_options = {}
+      searched_files = []
+
+      open_pgpass do |pgpass|
+        searched_files << pgpass.to_path
+        pgpass.each_line do |line|
+          available_options.merge!(parse_pgpass_line(line))
+        end
+      end
+
+      if found = available_options[demanded_database] || available_options['*']
+        options.merge(found)
+      else
+        abort 'Neither %p nor "*" found in %p' % [demanded_database, searched_files]
+      end
+    end
+
+    def open_pgpass(&block)
+      [ File.expand_path('../../../.pgpass', __FILE__),
+        File.expand_path('~/.pgpass'),
+      ].each do |path|
+        begin
+          File.open(path, 'r', &block)
+        rescue Errno::ENOENT
+        end
+      end
+    end
+
+    def parse_pgpass_line(line)
+      hostname, port, database, username, password = line.strip.split(':')
+      { database => {
+          host: hostname,
+          port: port,
+          user: username,
+          password: password
+        }.select{|k,v| v && v != '*' }
+      }
     end
   end
 end
