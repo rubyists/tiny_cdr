@@ -1,6 +1,5 @@
 require 'ramaze'
 require 'nokogiri'
-require 'makura'
 require 'sequel'
 require 'erubis'
 
