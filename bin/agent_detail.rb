@@ -7,7 +7,7 @@ require_relative "../model/init"
 
 # Installation:
 #
-# $ gem install rubyzip builder makura
+# $ gem install rubyzip builder
 #
 # Also:
 #   * http://github.com/rubyists/spreadsheet
@@ -15,9 +15,6 @@ require_relative "../model/init"
 #
 # Amend when we find something missing.
 
-#Makura::Model.server = 'http://jimmy:5984'
-#Makura::Model.database = 'tiny_cdr'
-#db = Makura::Model.database
 # Need to pull this from a file (later db)
 module TinyCdr
   module OOReport

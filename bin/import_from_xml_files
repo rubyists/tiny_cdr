@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+require_relative '../model/init'
+require 'cgi'
+
+ARGV.each do |arg|
+  Dir.glob(File.expand_path('**/*.cdr.xml', arg)) do |path|
+    uuid = File.basename(path, '.cdr.xml')
+
+    File.open(path) do |io|
+      content = io.read
+
+      if content.start_with?('%3C%3Fxml%20version')
+        content = CGI.unescape(content)
+      end
+
+      TinyCdr::Call.create_from_xml(uuid, content)
+    end
+  end
+end
