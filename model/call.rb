@@ -1,33 +1,29 @@
 module TinyCdr
   class Call < Sequel::Model
     set_dataset TinyCdr.db[:calls]
-    def self.create_from_xml(uuid, xml, leg = nil)
 
-      if uuid[0,2] == 'a_'
-        leg = 'a'
-        uuid = uuid[2..-1]
-      end
-      # convert to JSON and store in CouchDB
-      log = TinyCdr::Log.find_or_create_from_xml(uuid, xml)
+    def self.create_from_xml(given_uuid, xml, ignored_leg = nil)
+      /^(?<leg>a|b)_(?<uuid>\S+)$/ =~ given_uuid
 
-      unless self.find(:couch_id => log._id)
-        # Store basic data in a postgres record, or send a new one if it's a b_leg
-        call = {
-          :couch_id           => log._id,
-          :username           => log.callflow["caller_profile"]["username"],
-          :caller_id_number   => log.callflow["caller_profile"]["caller_id_number"],
-          :caller_id_name     => log.callflow["caller_profile"]["caller_id_name"],
-          :destination_number => log.callflow["caller_profile"]["destination_number"],
-          :channel            => log.callflow["caller_profile"]["chan_name"],
-          :context            => log.callflow["caller_profile"]["context"],
-          :start_stamp        => Time.at(log.variables["start_epoch"]),
-          :end_stamp          => Time.at(log.variables["end_epoch"]),
-          :duration           => log.variables["duration"],
-          :billsec            => log.variables["billsec"]
-        }
-        create call
+      if existing = self[uuid: uuid]
+        return existing
       end
 
+      log = Nokogiri::XML(xml)
+
+      create(
+        leg:                 leg,
+        uuid:                uuid,
+        username:            log.at('/cdr/callflow/caller_profile/username').text,
+        caller_id_number:    log.at('/cdr/callflow/caller_profile/caller_id_number').text,
+        destination_number:  log.at('/cdr/callflow/caller_profile/destination_number').text,
+        channel:             log.at('/cdr/callflow/caller_profile/chan_name').text,
+        context:             log.at('/cdr/callflow/caller_profile/context').text,
+        start_stamp: Time.at(log.at('/cdr/variables/start_epoch').text.to_i),
+        end_stamp:   Time.at(log.at('/cdr/variables/end_epoch').text.to_i),
+        billsec:             log.at('/cdr/variables/billsec').text,
+        original:            log.to_xml(indent: 2),
+      )
     end
 
     # @start - must be %m/%d/%Y
@@ -68,6 +64,7 @@ module TinyCdr
     def uuid
       detail.callflow["caller_profile"]["uuid"]
     end
+
     def detail
       @_couch ||= Log[couch_id] if couch_id
     end

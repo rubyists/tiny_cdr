@@ -4,7 +4,6 @@ daemons -v1.1.4
 erubis -v2.7.0
 eventmachine -v0.12.10
 innate -v2011.10
-makura -v2011.01.21
 mime-types -v1.17.2
 nokogiri -v1.5.0
 pg -v0.12.0
