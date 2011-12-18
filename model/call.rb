@@ -1,7 +1,37 @@
 module TinyCdr
   class Call < Sequel::Model
     set_dataset TinyCdr.db[:calls]
-    plugin :lazy_attributes, :xml
+    plugin :lazy_attributes, :original
+
+    def inspect
+      "<##{self.class.name} #{values.reject { |k,v| k.to_s == "original" }}>"
+    end
+
+    # TODO: Make these both options
+    RECORD_PATH_PREFIX_FROM = "recordings"
+    RECORD_BASE_PATH = File.join(ENV["HOME"], "tiny_cdr_files")
+
+    def recording_path # where the file lives on _this_ filesystem
+      # turns /var/lib/freeswitch/recordings/directory/file.wav into
+      # ENV['HOME'] + "/tiny_cdr_files/directory/file.wav"
+      File.join(RECORD_BASE_PATH, call_record_path.sub(%r{^.*/#{RECORD_PATH_PREFIX_FROM}/}, ''))
+    end
+
+    def call_record_path # raw file path
+      xml.xpath('/cdr/variables/call_record_path').text
+    end
+
+    def xml
+      @_xml ||= Nokogiri::XML(original)
+    end
+
+    def detail
+      @_detail ||= xml.to_xml(indent: 2)
+    end
+
+    def fifo_recipient
+      detail.callflow["caller_profile"]["originatee"]["originatee_caller_profile"]["destination_number"] rescue nil
+    end
 
     def self.create_from_xml(given_uuid, xml, ignored_leg = nil)
       /^(?<leg>a|b)_(?<uuid>\S+)$/ =~ given_uuid
@@ -25,10 +55,6 @@ module TinyCdr
         billsec:             log.at('/cdr/variables/billsec').text,
         original:            log.to_xml(indent: 2),
       )
-    end
-
-    def inspect
-      "#<#{self.class.name} #{self.object_id} uuid: #{self[:uuid]}, from: #{self[:caller_id_number]} to: #{self[:destination_number]}>"
     end
 
     # @start - must be %m/%d/%Y
@@ -64,18 +90,6 @@ module TinyCdr
       ds = ds.filter("caller_id_number ~ '^\\d\\d\\d\\d$' and destination_number ~ '^\\d\\d\\d\\d$'") if locals_only
       ds = ds.filter("channel ~ '192.168.6.118$' or channel ~ '192.168.6.37$'") if queue_only
       ds.order(:start_stamp)
-    end
-
-    def uuid
-      detail.callflow["caller_profile"]["uuid"]
-    end
-
-    def detail
-      @_couch ||= Log[couch_id] if couch_id
-    end
-
-    def fifo_recipient
-      detail.callflow["caller_profile"]["originatee"]["originatee_caller_profile"]["destination_number"] rescue nil
     end
   end
 end

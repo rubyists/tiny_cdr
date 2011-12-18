@@ -1,0 +1,30 @@
+<table>
+  <thead>
+    <th>Call</th>
+    <th>CID</th>
+    <th>Dest</th>
+    <th>Time</th>
+    <th>Listen</th>
+    <th>Download</th>
+  </thead>
+  <tbody>
+    <?r @calls.each do |call| ?>
+      <tr>
+        <td><!-- #{h call.inspect} --></td>
+        <td>#{h call.caller_id_number}</td>
+        <td>#{h call.destination_number}</td>
+        <td>#{format_time call.start_stamp} &mdash; #{format_time call.end_stamp}</td>
+        <td>
+          <audio src="#{r :listen, :wav, call.id}" preload controls>
+          Your browser doesn't support the <code>audio</code> element.
+          </audio>
+        </td>
+        <td>
+          <a href="#">MP3</a>
+          <a href="#">OGG</a>
+          <a href="#">WAV</a>
+        </td>
+      </tr>
+    <?r end ?>
+  </tbody>
+</table>

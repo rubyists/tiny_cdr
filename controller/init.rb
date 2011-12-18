@@ -7,3 +7,4 @@ end
 # Here go your requires for subclasses of Controller:
 require_relative 'main'
 require_relative 'cdr'
+require_relative 'recordings'
