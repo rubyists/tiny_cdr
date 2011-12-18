@@ -1,6 +1,7 @@
 module TinyCdr
   class Call < Sequel::Model
     set_dataset TinyCdr.db[:calls]
+    plugin :lazy_attributes, :xml
 
     def self.create_from_xml(given_uuid, xml, ignored_leg = nil)
       /^(?<leg>a|b)_(?<uuid>\S+)$/ =~ given_uuid
@@ -24,6 +25,10 @@ module TinyCdr
         billsec:             log.at('/cdr/variables/billsec').text,
         original:            log.to_xml(indent: 2),
       )
+    end
+
+    def inspect
+      "#<#{self.class.name} #{self.object_id} uuid: #{self[:uuid]}, from: #{self[:caller_id_number]} to: #{self[:destination_number]}>"
     end
 
     # @start - must be %m/%d/%Y
