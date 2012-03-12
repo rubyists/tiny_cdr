@@ -11,7 +11,12 @@ task :migrate, :version do |_, args|
 
   raise "No DB found" unless TinyCdr.db
 
-  require_relative '../model/init'
+  #require_relative '../model/init'
+
+  require 'nokogiri'
+  require 'sequel'
+
+  DB = TinyCdr.setup_db
 
   if args.version.nil?
     Sequel::Migrator.apply(TinyCdr.db, TinyCdr::MIGRATION_ROOT)
