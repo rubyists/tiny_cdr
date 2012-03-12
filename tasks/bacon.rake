@@ -1,9 +1,7 @@
-# Copyright (c) 2008-2009 The Rubyists, LLC (effortless systems) <rubyists@rubyists.com>
-# Distributed under the terms of the MIT license.
-# The full text can be found in the LICENSE file included with this software
-#
+require 'fileutils'
+
 desc 'Run all bacon specs with pretty output'
-task :bacon => :install_dependencies do
+task :bacon do
   require 'open3'
   require 'scanf'
   require 'matrix'
@@ -12,10 +10,6 @@ task :bacon => :install_dependencies do
 
   some_failed = false
   specs_size = specs.size
-  if specs.size == 0
-    $stderr.puts "You have no specs!  Put a spec in spec/ before running this task"
-    exit 1
-  end
   len = specs.map{|s| s.size }.sort.last
   total_tests = total_assertions = total_failures = total_errors = 0
   totals = Vector[0, 0, 0, 0]
@@ -27,7 +21,7 @@ task :bacon => :install_dependencies do
   specs.each_with_index do |spec, idx|
     print(left_format % [idx + 1, specs_size, spec])
 
-    Open3.popen3(RUBY, spec) do |sin, sout, serr|
+    Open3.popen3(FileUtils::RUBY, '-w', spec) do |sin, sout, serr|
       out = sout.read.strip
       err = serr.read.strip
 
