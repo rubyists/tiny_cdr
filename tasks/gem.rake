@@ -2,7 +2,7 @@
 # Distributed under the terms of the MIT license.
 # The full text can be found in the LICENSE file included with this software
 #
-require 'rake/gempackagetask'
+require 'rubygems/package_task'
 
 desc "make a gemspec"
 task :gemspec => [:manifest, :changelog, :authors] do
