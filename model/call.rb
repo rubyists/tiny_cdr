@@ -14,7 +14,9 @@ module TinyCdr
     ARCHIVE_PATH = "/mnt/lincoln/recordings"
 
     def recording_path # where the file lives on _this_ filesystem
-      return recording unless recording.nil?
+      unless recording.nil?
+        return recording if File.exists?(recording)
+      end
       # turns /var/lib/freeswitch/recordings/directory/file.wav into
       # ENV['HOME'] + "/tiny_cdr_files/directory/file.wav"
       original = File.join(RECORD_BASE_PATH, call_record_path.sub(%r{^.*/#{RECORD_PATH_PREFIX_FROM}/}, ''))
