@@ -3,6 +3,7 @@ require "fileutils"
 require_relative "../app"
 Dir.chdir TinyCdr.options[:base_record_path]
 puts "In #{Dir.pwd}"
+puts "Mounted Record Path is #{TinyCdr.options[:mounted_record_path]}"
 today = Date.today.strftime("%Y%m%d")
 puts "Today is #{today}"
 if __FILE__ == $0
