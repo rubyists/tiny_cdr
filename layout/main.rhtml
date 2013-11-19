@@ -4,10 +4,18 @@
   <head>
     <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
     <title><%=h @title %></title>
-    <link type="text/css" rel="stylesheet" href="/css/jquery-ui-1.8.4.custom.css"/>
+    <link type="text/css" rel="stylesheet" href="/css/screen.css"/>
+    <link type="text/css" rel="stylesheet" href="/css/jquery.dataTables.css"/>
+    <link type="text/css" rel="stylesheet" href="/css/TableTools.css"/>
+    <link type="text/css" rel="stylesheet" href="/css/TableTools_JUI.css"/>
+    <link type="text/css" rel="stylesheet" href="/css/jquery-ui-1.9.2.custom.css"/>
+    <link href='http://fonts.googleapis.com/css?family=Cinzel+Decorative:400,700' rel='stylesheet' type='text/css'>
     <style>label, input { display: block; }</style>
-    <script type="text/javascript" src="/js/jquery-1.4.2.min.js"></script>
-    <script type="text/javascript" src="/js/jquery-ui-1.8.4.custom.min.js"></script>
+    <script type="text/javascript" src="/js/jquery-1.8.3.js"></script>
+    <script type="text/javascript" src="/js/jquery-ui-1.9.2.custom.min.js"></script>
+    <script type="text/javascript" src="/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="/js/TableTools.min.js"></script>
+    <script type="text/javascript" src="/js/tiny_cdr.js"></script>
     <script type="text/javascript">
       $(function(){
         $('.datepicker').datepicker({
@@ -19,6 +27,8 @@
     <%= @head %>
   </head>
   <body>
+    <div id="logo">
+    </div>
     <h1><%= @title %></h1>
     <div id="content">
       <%= @content %>

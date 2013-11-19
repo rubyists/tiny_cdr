@@ -1,0 +1,14 @@
+<form method="get" action="<%= r(:user_report) %>">
+  <fieldset>
+    <legend>Query</legend>
+    <label for="date_start">Start Date:</label>
+    <input type="text" id="date_start" name="date_start" class="datepicker"/>
+    <label for="date_end">End Date:</label>
+    <input type="text" id="date_end" name="date_end" class="datepicker"/>
+    <label for="username">Username (Extension):</label>
+    <input type="text" id="username" name="username"/>
+    <label for="phone_number">Phone Number:</label>
+    <input type="text" id="phone_number" name="phone_number"/>
+    <input type="submit"/>
+  </fieldset>
+</form>

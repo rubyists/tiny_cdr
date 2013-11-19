@@ -9,12 +9,38 @@ module TinyCdr
 
     # TODO: Make these both options
     RECORD_PATH_PREFIX_FROM = "recordings"
-    RECORD_BASE_PATH = File.join(ENV["HOME"], "tiny_cdr_files")
+    #RECORD_BASE_PATH = File.join(ENV["HOME"], "tiny_cdr_files")
+    RECORD_BASE_PATH = "/var/lib/freeswitch/recordings"
+    ARCHIVE_PATH = "/mnt/lincoln/recordings"
 
     def recording_path # where the file lives on _this_ filesystem
+      return recording unless recording.nil?
       # turns /var/lib/freeswitch/recordings/directory/file.wav into
       # ENV['HOME'] + "/tiny_cdr_files/directory/file.wav"
-      File.join(RECORD_BASE_PATH, call_record_path.sub(%r{^.*/#{RECORD_PATH_PREFIX_FROM}/}, ''))
+      original = File.join(RECORD_BASE_PATH, call_record_path.sub(%r{^.*/#{RECORD_PATH_PREFIX_FROM}/}, ''))
+      if File.exists? original
+        self.recording = original
+        self.save
+        return self.recording
+      else 
+        found_record = nil
+        record_found = [RECORD_BASE_PATH, ARCHIVE_PATH].find do |path|
+          found = Dir[File.join(path, "**", CGI.unescape(File.basename(original)))]
+          if found.count == 1
+            found_record = found.first
+            true
+          else
+            false
+          end
+        end
+        if record_found
+          self.recording = found_record
+          self.save
+          return self.recording
+        else
+          return nil
+        end
+      end
     end
 
     def call_record_path # raw file path
@@ -47,12 +73,15 @@ module TinyCdr
         uuid:                uuid,
         username:            log.at('/cdr/callflow/caller_profile/username').text,
         caller_id_number:    log.at('/cdr/callflow/caller_profile/caller_id_number').text,
+        caller_id_name:      (log.at('/cdr/callflow/caller_profile/origination/origination_caller_profile/caller_id_name') || log.at('/cdr/callflow/caller_profile/caller_id_name')).text,
         destination_number:  log.at('/cdr/callflow/caller_profile/destination_number').text,
         channel:             log.at('/cdr/callflow/caller_profile/chan_name').text,
         context:             log.at('/cdr/callflow/caller_profile/context').text,
         start_stamp: Time.at(log.at('/cdr/variables/start_epoch').text.to_i),
         end_stamp:   Time.at(log.at('/cdr/variables/end_epoch').text.to_i),
         billsec:             log.at('/cdr/variables/billsec').text,
+        duration:            log.at('/cdr/variables/duration').text,
+        recording:           log.at('/cdr/variables/call_record_path').text,
         original:            log.to_xml(indent: 2),
       )
     end

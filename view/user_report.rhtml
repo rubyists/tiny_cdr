@@ -6,29 +6,42 @@
     <td class="total_time"><%= @total_time %> minutes</td>
   </tr>
 </table>
-<table>
-  <tr>
-    <th>Username</th>
-    <th>CID Num</th>
-    <th>CID Name</th>
-    <th>Dest Num</th>
-    <th>Start</th>
-    <th>End</th>
-    <th>Duration</th>
-    <th>Channel</th>
-    <th>Context</th>
-  </tr>
+<table id="user_calls">
+  <thead>
+    <tr>
+      <th>CID Num</th>
+      <th>CID Name</th>
+      <th>Dest Num</th>
+      <th>Time</th>
+      <th>Duration</th>
+      <th>Listen</th>
+      <th>Download</th>
+    </tr>
+  </thead>
+  <tbody>
   <% @calls.each do |call| %>
-  <tr>
-    <td class="username"><%= call.username %></td>
-    <td class="cid_num"><%= call.caller_id_number %></td>
-    <td class="cid_name"><%= call.caller_id_name %></td>
-    <td class="dest_num"><%= call.destination_number %></td>
-    <td class="start"><%= call.start_stamp.strftime("%m/%d/%Y %H:%M:%S") %></td>
-    <td class="end"><%= call.end_stamp.strftime("%m/%d/%Y %H:%M:%S") %></td>
-    <td class="duration"><%= call.duration %></td>
-    <td class="channel"><%= call.channel %></td>
-    <td class="context"><%= call.context %></td>
-  </tr>
+    <tr>
+      <td class="cid_num"><%= call.caller_id_number %></td>
+      <td class="cid_name"><%= call.caller_id_name %></td>
+      <td class="dest_num"><%= call.destination_number %></td>
+      <td class="start"><%= call.start_stamp.strftime("%m/%d/%Y %H:%M:%S") %></td>
+      <td class="duration"><%= call.duration %></td>
+      <td>
+        <audio src="/listen/wav/<%= call.id %>" preload="none" controls>
+          Your browser doesn't support the <code>audio</code> element. Please
+          use one of the file format downloads.
+        </audio>
+        <br/>
+      </td>
+      <td>
+        <a href="/export/<%= call.id %>.mp3">MP3</a>
+        <a href="/export/<%= call.id %>.ogg">OGG</a>
+        <a href="/export/<%= call.id %>.wav">WAV</a>
+      </td>
+    </tr>
   <% end %>
+  </tbody>
 </table>
+<div>
+  <p><a href="/search">New Search</a></p>
+</div>

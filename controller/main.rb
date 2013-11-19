@@ -2,11 +2,15 @@ require 'date'
 require File.dirname(__FILE__) + '/../lib/daily_good_abandon_report_by_hour.rb'
 class MainController < Controller
   layout :main
-  helper :xhtml
+  helper :xhtml, :send_file
   engine :Erubis
 
   # the index action is called automatically when no other action is specified
   def index
+    redirect :search
+  end
+
+  def search
     @head  = '<script type="text/javascript" src="/js/index.js"></script>'
     @title = "TinyCDR - FreeSWITCH CDR Reporting"
   end
@@ -49,6 +53,27 @@ class MainController < Controller
     @total_time = @calls.inject(0) {|a,b| a + b.duration.to_i }/60
   end
 
+  def listen(format, id)
+    require "cgi"
+    if call = TinyCdr::Call[id: id]
+      if call.recording_path.nil?
+        Ramaze::Log.error "Call #{id} #{call.recording_path} not available"
+        respond 'Not Found', 404
+      else
+        text_path = call.recording_path
+        if File.file?(text_path)
+          send_file(text_path, 'audio/x-wav; charset=binary; filename=' + id + '.wav')
+        else
+          Ramaze::Log.error "#{text_path} not available"
+          respond 'Not Found', 404
+        end
+      end
+    else
+
+      respond 'Not Found', 404
+    end
+  end
+
   def user_report_couch
     @title = "Call Detail for #{h request[:username]}"
     view = request[:avoid_locals] ? 'call_detail_avoid_locals' : 'call_detail'
@@ -58,5 +83,9 @@ class MainController < Controller
       startkey: [request[:username], Time.strptime(request[:date_start], '%m/%d/%Y').to_i],
       endkey: [request[:username], Time.strptime(request[:date_end], '%m/%d/%Y').to_i]
     )['rows'].map{|row| row['value'] }
+  end
+
+  def format_time(time)
+    time.strftime('%Y-%m-%d %H:%M')
   end
 end
