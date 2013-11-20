@@ -27,7 +27,7 @@
       <td class="start"><%= call.start_stamp.strftime("%m/%d/%Y %H:%M:%S") %></td>
       <td class="duration"><%= call.duration %></td>
       <td>
-        <audio src="/listen/wav/<%= call.id %>" preload="none" controls>
+        <audio src="/listen/<%= call.id %>.wav" preload="none" controls>
           Your browser doesn't support the <code>audio</code> element. Please
           use one of the file format downloads.
         </audio>

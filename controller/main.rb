@@ -53,13 +53,22 @@ class MainController < Controller
     @total_time = @calls.inject(0) {|a,b| a + b.duration.to_i }/60
   end
 
-  def listen(format, id, mime_type = 'x-wav')
+  def listen(fname)
     require "cgi"
+    format, id = fname.reverse.split(".", 2).map { |n| n.reverse }
     if call = TinyCdr::Call[id: id]
       if call.recording_path.nil?
         Ramaze::Log.error "Call #{id} #{call.recording_path} not available"
         respond 'Not Found', 404
       else
+        mime_type = case format
+                    when "ogg"
+                      "ogg"
+                    when "wav"
+                      "x-wav"
+                    when "mp3"
+                      "x-mpeg3"
+                    end
         text_path = call.format_recording(format)
         if File.file?(text_path)
           send_file(text_path, "audio/%s; charset=binary; filename=%s.%s" % [mime_type, id, format])
@@ -69,22 +78,9 @@ class MainController < Controller
         end
       end
     else
-
+      Ramaze::Log.error "Call #{id} does not exist"
       respond 'Not Found', 404
     end
-  end
-
-  def export(fname)
-    format, name = fname.reverse.split(".", 2).map { |n| n.reverse }
-    mime_type = case format
-                when "ogg"
-                  "ogg"
-                when "wav"
-                  "x-wav"
-                when "mp3"
-                  "x-mpeg3"
-                end
-    redirect("listen/%s/%s/%s" % [format, name, mime_type])
   end
 
   def user_report_couch
