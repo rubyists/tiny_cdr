@@ -11,7 +11,7 @@ module TinyCdr
     RECORD_PATH_PREFIX_FROM = "recordings"
     #RECORD_BASE_PATH = File.join(ENV["HOME"], "tiny_cdr_files")
     RECORD_BASE_PATH = TinyCdr.options[:record_base_path]
-    ARCHIVE_PATH = TinyCdr.options[:archive_record_path]
+    ARCHIVE_PATHS = TinyCdr.options[:archive_record_path].split(":")
 
     def recording_path # where the file lives on _this_ filesystem
       unless recording.nil?
@@ -27,8 +27,10 @@ module TinyCdr
         return self.recording
       else 
         found_record = nil
-        record_found = [RECORD_BASE_PATH, ARCHIVE_PATH].find do |path|
-          found = Dir[File.join(path, "**", CGI.unescape(File.basename(original_location)))]
+        paths = [RECORD_BASE_PATH] + ARCHIVE_PATHS
+        base_file = File.basename(original_location)
+        record_found = paths.find do |path|
+          found = Dir[File.join(path, "**", "#{CGI.unescape(base_file)}*")]
           if found.count == 1
             found_record = found.first
             true
