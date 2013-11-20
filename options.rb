@@ -13,7 +13,7 @@ module TinyCdr
 
     o "Main Recording Path", :base_record_path, ENV["TinyCdr_BaseRecordPath"] || "/var/spool/freeswitch/recordings"
 
-    o "Archive Recording Path", :archive_record_path, ENV["TinyCdr_ArchiveRecordPath"] || "/mnt/recordings"
+    o "Archive Recording Paths (: separated, unix-style)", :archive_record_paths, ENV["TinyCdr_ArchiveRecordPaths"] || "/mnt/recordings"
 
     o "Mounted Recording Path", :mounted_record_path, ENV["TinyCdr_MountedRecordPath"] || "/mnt/recordings"
   end

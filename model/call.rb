@@ -10,7 +10,7 @@ module TinyCdr
     # TODO: Make these both options
     RECORD_PATH_PREFIX_FROM = "recordings"
     BASE_RECORD_PATH = TinyCdr.options[:base_record_path]
-    ARCHIVE_PATHS = TinyCdr.options[:archive_record_path].split(":")
+    ARCHIVE_PATHS = TinyCdr.options[:archive_record_paths].split(":")
 
     def recording_path # where the file lives on _this_ filesystem
       unless recording.nil?
