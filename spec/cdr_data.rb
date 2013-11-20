@@ -23,6 +23,7 @@ shared :makedoc do
     start_epoch = args[:start_epoch]  || 1000000000 + rand(284904211)
     end_epoch   = args[:end_epoch]    || start_epoch + rand(400)
     duration    = args[:duration]     || (end_epoch - start_epoch).to_i
+    billsec     = args[:billsec]     || duration
     doc = <<-XML
 <?xml version="1.0"?>
 <cdr>
@@ -48,6 +49,7 @@ shared :makedoc do
     <end_epoch>#{end_epoch}</end_epoch>
     <sip_from_tag>BD37552C-4B5</sip_from_tag>
     <duration>#{duration}</duration>
+    <billsec>#{duration}</billsec>
   </variables>
   <app_log>
     <application app_name="set" app_data="continue_on_fail=true">

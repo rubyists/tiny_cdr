@@ -10,7 +10,7 @@ shared :call_spec do
     calls = Array.new(n){
       doc = makedoc
       uuid = (Nokogiri(doc)/:uuid).first.text
-      TinyCdr::Call.create_from_xml(uuid, makedoc)
+      TinyCdr::Call.create_from_xml(uuid, doc)
     }
   end
 end
