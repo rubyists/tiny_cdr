@@ -1,13 +1,39 @@
 #!/usr/bin/env ruby
 
 require_relative '../model/init'
+require "fileutils"
 require 'cgi'
+require "bzip2"
+TODAY=Date.today
+TODAY_PATH=TODAY.strftime("%Y/%m/%d")
+
+def archive_dir(dir)
+  archive_path = File.join(dir, "archive", TODAY_PATH)
+  unless File.directory? archive_path
+    FileUtils.mkdir_p(archive_path)
+  end
+  archive_path
+end
+
+def archive(path)
+  dir = File.dirname path
+  fname = File.basename(path)
+  writer = Bzip2::Writer.new(File.open(File.join(archive_dir(dir),"#{fname}.bz2"), "w+"))
+  writer << File.read(path)
+  writer.close
+  FileUtils.rm(path)
+end
 
 ARGV.each do |arg|
+  unless File.directory? arg
+    warn "#{arg} is not a directory, skipping"
+    next
+  end
   Dir.glob(File.expand_path('**/*.cdr.xml', arg)) do |path|
     uuid = File.basename(path, '.cdr.xml')
 
     File.open(path) do |io|
+      begin
       content = io.read
 
       if content.start_with?('%3C%3Fxml%20version')
@@ -15,6 +41,12 @@ ARGV.each do |arg|
       end
 
       TinyCdr::Call.create_from_xml(uuid, content)
+      rescue => e
+        warn e
+        warn "not moving #{path}" 
+        next
+      end
+      archive path
     end
   end
 end
