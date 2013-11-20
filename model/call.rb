@@ -10,8 +10,8 @@ module TinyCdr
     # TODO: Make these both options
     RECORD_PATH_PREFIX_FROM = "recordings"
     #RECORD_BASE_PATH = File.join(ENV["HOME"], "tiny_cdr_files")
-    RECORD_BASE_PATH = "/var/lib/freeswitch/recordings"
-    ARCHIVE_PATH = "/mnt/lincoln/recordings"
+    RECORD_BASE_PATH = TinyCdr.options[:record_base_path]
+    ARCHIVE_PATH = TinyCdr.options[:archive_record_path]
 
     def recording_path # where the file lives on _this_ filesystem
       unless recording.nil?
@@ -19,15 +19,16 @@ module TinyCdr
       end
       # turns /var/lib/freeswitch/recordings/directory/file.wav into
       # ENV['HOME'] + "/tiny_cdr_files/directory/file.wav"
-      original = File.join(RECORD_BASE_PATH, call_record_path.sub(%r{^.*/#{RECORD_PATH_PREFIX_FROM}/}, ''))
-      if File.exists? original
-        self.recording = original
+      return nil if call_record_path.nil?
+      original_location = File.join(RECORD_BASE_PATH, call_record_path.sub(%r{^.*/#{RECORD_PATH_PREFIX_FROM}/}, ''))
+      if File.exists? original_location
+        self.recording = original_location
         self.save
         return self.recording
       else 
         found_record = nil
         record_found = [RECORD_BASE_PATH, ARCHIVE_PATH].find do |path|
-          found = Dir[File.join(path, "**", CGI.unescape(File.basename(original)))]
+          found = Dir[File.join(path, "**", CGI.unescape(File.basename(original_location)))]
           if found.count == 1
             found_record = found.first
             true
@@ -46,7 +47,11 @@ module TinyCdr
     end
 
     def call_record_path # raw file path
-      xml.xpath('/cdr/variables/call_record_path').text
+      if node = xml.xpath('/cdr/variables/call_record_path')
+        node.text
+      else
+        nil
+      end
     end
 
     def xml
@@ -83,7 +88,6 @@ module TinyCdr
         end_stamp:   Time.at(log.at('/cdr/variables/end_epoch').text.to_i),
         billsec:             log.at('/cdr/variables/billsec').text,
         duration:            log.at('/cdr/variables/duration').text,
-        recording:           log.at('/cdr/variables/call_record_path').text,
         original:            log.to_xml(indent: 2),
       )
     end
