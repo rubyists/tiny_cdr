@@ -9,8 +9,7 @@ module TinyCdr
 
     # TODO: Make these both options
     RECORD_PATH_PREFIX_FROM = "recordings"
-    #RECORD_BASE_PATH = File.join(ENV["HOME"], "tiny_cdr_files")
-    RECORD_BASE_PATH = TinyCdr.options[:record_base_path]
+    BASE_RECORD_PATH = TinyCdr.options[:base_record_path]
     ARCHIVE_PATHS = TinyCdr.options[:archive_record_path].split(":")
 
     def recording_path # where the file lives on _this_ filesystem
@@ -20,14 +19,14 @@ module TinyCdr
       # turns /var/lib/freeswitch/recordings/directory/file.wav into
       # ENV['HOME'] + "/tiny_cdr_files/directory/file.wav"
       return nil if call_record_path.nil?
-      original_location = File.join(RECORD_BASE_PATH, call_record_path.sub(%r{^.*/#{RECORD_PATH_PREFIX_FROM}/}, ''))
+      original_location = File.join(BASE_RECORD_PATH, call_record_path.sub(%r{^.*/#{RECORD_PATH_PREFIX_FROM}/}, ''))
       if File.exists? original_location
         self.recording = original_location
         self.save
         return self.recording
       else 
         found_record = nil
-        paths = [RECORD_BASE_PATH] + ARCHIVE_PATHS
+        paths = [BASE_RECORD_PATH] + ARCHIVE_PATHS
         base_file = File.basename(original_location)
         record_found = paths.find do |path|
           found = Dir[File.join(path, "**", "#{CGI.unescape(base_file)}*")]
