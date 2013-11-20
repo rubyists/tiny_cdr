@@ -16,5 +16,7 @@ module TinyCdr
     o "Archive Recording Paths (: separated, unix-style)", :archive_record_paths, ENV["TinyCdr_ArchiveRecordPaths"] || "/mnt/recordings"
 
     o "Mounted Recording Path", :mounted_record_path, ENV["TinyCdr_MountedRecordPath"] || "/mnt/recordings"
+
+    o "Temporary Audio File Path", :tmp_file_path, ENV["TinyCdr_TmpFilePath"] || "/tmp"
   end
 end

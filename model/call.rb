@@ -1,3 +1,4 @@
+require "fileutils"
 module TinyCdr
   class Call < Sequel::Model
     set_dataset TinyCdr.db[:calls]
@@ -11,6 +12,60 @@ module TinyCdr
     RECORD_PATH_PREFIX_FROM = "recordings"
     BASE_RECORD_PATH = TinyCdr.options[:base_record_path]
     ARCHIVE_PATHS = TinyCdr.options[:archive_record_paths].split(":")
+    TMP_FILE_PATH = TinyCdr.options[:tmp_file_path]
+
+    def convert_wav(type, curfile = nil)
+      curfile ||= recording_path
+      tmp_file_name = "#{File.basename(curfile)}.#{type}"
+      tmp_file_path = File.join(TMP_FILE_PATH, tmp_file_name)
+      cmd = case type
+      when "mp3"
+        'lame -V 2 %s %s' % [curfile, tmp_file_path]
+      when "ogg"
+        'oggenc -o %s %s' % [tmp_file_path, curfile]
+      end
+      return nil unless cmd
+      output = %x{#{cmd} 2>&1}
+      retval = $?
+      if retval == 0
+        tmp_file_path
+      else
+        Ramaze::Log.error "Conversion of #{curfile} to #{type} failed: #{retval} -> #{output}"
+        nil
+      end
+    end
+
+    def convert_spx(type)
+      tmp_file_name = "#{File.basename(recording_path)}.#{type}"
+      wav_file = File.join(TMP_FILE_PATH, tmp_file_name, ".wav")
+      output = %x{speexdec #{recording_path} #{wav_file} 2>&1}
+      retval = $?
+      if $? == 0
+        return wav_file if type == "wav"
+        new_file = convert_wav(type, wav_file)
+        FileUtils.rm wav_file
+        new_file
+      else
+        Ramaze::Log.error "Conversion of #{recording_path} to wav failed: #{retval} -> #{output}"
+        nil
+      end
+    end
+
+    def convert_recording(current_type, new_type)
+      case current_type
+      when "wav"
+        convert_wav new_type
+      when "spx"
+        convert_spx new_type
+      end
+    end
+
+    def format_recording(type)
+      return nil unless recording_path
+      current_type = recording_path.reverse.split(".", 2).first.reverse
+      return recording_path if type == current_type
+      convert_recording(current_type, type)
+    end
 
     def recording_path # where the file lives on _this_ filesystem
       unless recording.nil?
