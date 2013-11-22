@@ -1,9 +1,15 @@
 require 'date'
 require File.dirname(__FILE__) + '/../lib/daily_good_abandon_report_by_hour.rb'
 class MainController < Controller
-  layout :main
-  helper :xhtml, :send_file
-  engine :Erubis
+  helper :send_file
+
+  def login
+    @title = "Login"
+    redirect_referer if logged_in?
+    return unless request.post?
+    user_login(request.subset(:login, :password))
+    redirect_referer
+  end
 
   # the index action is called automatically when no other action is specified
   def index
@@ -11,16 +17,18 @@ class MainController < Controller
   end
 
   def search
-    @head  = '<script type="text/javascript" src="/js/index.js"></script>'
+    login_first
     @title = "TinyCDR - FreeSWITCH CDR Reporting"
   end
 
   def give_file
+    login_first
     filename = request[:filename]   
     render_file(filename,:content_type => "application/excel" )
   end
 
   def inbound_stats
+    login_first
     start = request[:argdate]
     @title = "Hourly Incoming Dropped Call Report"
     @title << " for #{start}" unless start.nil?
@@ -32,7 +40,10 @@ class MainController < Controller
   end
 
   def user_report
+    login_first
     start, stop = request[:date_start, :date_end]
+    start = nil if start.empty?
+    stop = nil if stop.empty?
     username, phone_number = request[:username, :phone_number].map{|s| s.to_s.strip }
     username = nil if username.empty?
     phone_number = nil if phone_number.empty?
@@ -43,7 +54,7 @@ class MainController < Controller
     avoid_locals = (request[:avoid_locals].empty? ? false : true) rescue nil
     locals_only = (request[:locals_only].empty? ? false : true) rescue nil
 
-    ds = TinyCdr::Call.user_report(start, stop, {:username => username,
+    ds = TinyCdr::Call.user_report(start, stop, user, {:username => username,
                                                  :phone    => phone_number,
                                                  :queue_only    => queue_only,
                                                  :locals_only    => locals_only,
@@ -54,44 +65,39 @@ class MainController < Controller
   end
 
   def listen(fname)
+    login_first
     require "cgi"
     format, id = fname.reverse.split(".", 2).map { |n| n.reverse }
     if call = TinyCdr::Call[id: id]
-      if call.recording_path.nil?
-        Ramaze::Log.error "Call #{id} #{call.recording_path} not available"
-        respond 'Not Found', 404
-      else
-        mime_type = case format
-                    when "ogg"
-                      "ogg"
-                    when "wav"
-                      "x-wav"
-                    when "mp3"
-                      "x-mpeg3"
-                    end
-        text_path = call.format_recording(format)
-        if File.file?(text_path)
-          send_file(text_path, "audio/%s; charset=binary; filename=%s.%s" % [mime_type, id, format])
-        else
-          Ramaze::Log.error "#{text_path} not available or unconvertable from #{file_type} to #{format}"
+      if call.can_listen?(user)
+        if call.recording_path.nil?
+          Ramaze::Log.error "Call #{id} #{call.recording_path} not available"
           respond 'Not Found', 404
+        else
+          mime_type = case format
+                      when "ogg"
+                        "ogg"
+                      when "wav"
+                        "x-wav"
+                      when "mp3"
+                        "x-mpeg3"
+                      end
+          text_path = call.format_recording(format)
+          if text_path && File.file?(text_path)
+            send_file(text_path, "audio/%s; charset=binary; filename=%s.%s" % [mime_type, id, format])
+          else
+            Ramaze::Log.error "#{text_path} not available or unconvertable from #{call.current_format} to #{format} for #{id}"
+            respond 'Not Found', 404
+          end
         end
+      else
+        Ramaze::Log.error "User does not have permission to listen to Call #{id}"
+        respond 'Not Found', 404
       end
     else
       Ramaze::Log.error "Call #{id} does not exist"
       respond 'Not Found', 404
     end
-  end
-
-  def user_report_couch
-    @title = "Call Detail for #{h request[:username]}"
-    view = request[:avoid_locals] ? 'call_detail_avoid_locals' : 'call_detail'
-
-    @calls = Makura::Model.database.view(
-      "log/_view/#{view}",
-      startkey: [request[:username], Time.strptime(request[:date_start], '%m/%d/%Y').to_i],
-      endkey: [request[:username], Time.strptime(request[:date_end], '%m/%d/%Y').to_i]
-    )['rows'].map{|row| row['value'] }
   end
 
   def format_time(time)

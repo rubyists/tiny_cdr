@@ -2,6 +2,16 @@
 # controllers
 
 class Controller < Ramaze::Controller
+  helper :xhtml, :user
+  layout :main
+  engine :Erubis
+  trait :user_model => TinyCdr::Account
+  private
+
+  def login_first
+    return if logged_in?
+    redirect MainController.r(:login)
+  end
 end
 
 # Here go your requires for subclasses of Controller:

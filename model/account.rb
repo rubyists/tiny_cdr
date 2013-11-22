@@ -2,6 +2,7 @@ require "digest/sha1"
 module TinyCdr
   class Account < Sequel::Model
     set_dataset TinyCdr.db[:accounts]
+    one_to_one :manager
 
     attr_accessor :password, :password_confirmation
 

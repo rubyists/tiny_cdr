@@ -29,7 +29,7 @@ module TinyCdr
 
     o "Ldap User Attribute", :ldap_user_attrib, ENV["TinyCdr_LdapUserAttrib"]
 
-    o "Ldap Phone Attribute", :ldap_phone_attrib, ENV["TinyCdr_LdapPhoneAttrib"]
+    o "Ldap Phone Attribute", :ldap_phone_attrib, ENV["TinyCdr_LdapPhoneAttrib"] || "ipPhone"
 
     o "Ldap Tree Base", :ldap_base, ENV["TinyCdr_LdapBase"]
   end

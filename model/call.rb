@@ -30,7 +30,7 @@ module TinyCdr
       if retval == 0
         tmp_file_path
       else
-        Ramaze::Log.error "Conversion of #{curfile} to #{type} failed: #{retval} -> #{output}"
+        Log.error "Conversion of #{curfile} to #{type} failed: #{retval} -> #{output}"
         nil
       end
     end
@@ -46,7 +46,7 @@ module TinyCdr
         FileUtils.rm wav_file
         new_file
       else
-        Ramaze::Log.error "Conversion of #{recording_path} to wav failed: #{retval} -> #{output}"
+        error "Conversion of #{recording_path} to wav failed: #{retval} -> #{output}"
         nil
       end
     end
@@ -60,9 +60,14 @@ module TinyCdr
       end
     end
 
+    def current_format
+      return nil unless recording_path
+      recording_path.reverse.split(".", 2).first.reverse
+    end
+
     def format_recording(type)
       return nil unless recording_path
-      current_type = recording_path.reverse.split(".", 2).first.reverse
+      current_type = current_format
       return recording_path if type == current_type
       convert_recording(current_type, type)
     end
@@ -73,7 +78,7 @@ module TinyCdr
       end
       # turns /var/lib/freeswitch/recordings/directory/file.wav into
       # ENV['HOME'] + "/tiny_cdr_files/directory/file.wav"
-      return nil if call_record_path.nil?
+      return nil if call_record_path.empty?
       original_location = File.join(BASE_RECORD_PATH, call_record_path.sub(%r{^.*/#{RECORD_PATH_PREFIX_FROM}/}, ''))
       if File.exists? original_location
         self.recording = original_location
@@ -148,11 +153,31 @@ module TinyCdr
       )
     end
 
+    def queue_servers
+      return @queue_servers if @queue_servers
+      if q_servers = TinyCdr.options[:queue_servers]
+        @queue_servers = q_servers.split(",")
+      else
+        @queue_servers = []
+      end
+    end
+
+    def can_listen?(user = nil)
+      if user
+        if manager = user.manager
+          manager.can_listen?(self)
+        else
+          caller_id_number == user.extension || destination_number == user.extension || username == user.extension
+        end
+      else
+        true
+      end
+    end
     # @start - must be %m/%d/%Y
     # @stop - must be %m/%d/%Y
     # @avoid_locals - true if you don't want to see ext to ext calls
     # @conditions - may include :username or :phone
-    def self.user_report(start, stop, conditions = {})
+    def self.user_report(start = nil, stop = nil, user = nil, conditions = {})
       conditionals = 'username in ? or caller_id_number in ? or destination_number in ?'
       username = conditions[:username]
       phone_num = conditions[:phone]
@@ -178,9 +203,23 @@ module TinyCdr
         stop.kind_of?(Date) ? (ds = ds.filter {end_stamp <= stop }) : (ds = ds.filter{end_stamp <= Date.strptime(stop, "%m/%d/%Y") })
       end
       ds = ds.filter("caller_id_number ~ '^\\d\\d\\d\\d\\d+$' or destination_number ~ '^\\d\\d\\d\\d\\d+$'") if avoid_locals
-      ds = ds.filter("caller_id_number ~ '^\\d\\d\\d\\d$' and destination_number ~ '^\\d\\d\\d\\d$'") if locals_only
-      ds = ds.filter("channel ~ '192.168.6.118$' or channel ~ '192.168.6.37$'") if queue_only
-      ds.order(:start_stamp)
+      ds = ds.filter("caller_id_number ~ '^\\d\\d\\d\\d?$' and destination_number ~ '^\\d\\d\\d\\d?$'") if locals_only
+      if queue_only
+        queue_conditions = []
+        queue_servers.each do |queue_server|
+          queue_condidtions << "channel ~ '#{queue_server}'"
+        end
+        ds = ds.filter(queue_conditions.join(" or ")) if queue_conditions.count > 0
+      end
+      if user
+        if user.manager
+          user.manager.filter_calls(ds).order(:start_stamp)
+        else
+          ds.filter("username = ? or destination_number = ? or caller_id_number = ?", *([user.extension] * 3)).order(:start_stamp)
+        end
+      else
+        ds.order(:start_stamp)
+      end
     end
   end
 end

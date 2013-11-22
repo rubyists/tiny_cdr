@@ -8,5 +8,5 @@ require_relative "./options"
 TinyCdr::Log.level = Log4r.const_get(TinyCdr.options[:log_level])
 
 # Initialize controllers and models
-require_relative 'controller/init'
 require_relative 'model/init'
+require_relative 'controller/init'
