@@ -1,3 +1,4 @@
 log/*
 .pgpass
 migrate.rb
+*.swp
