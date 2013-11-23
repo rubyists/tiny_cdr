@@ -15,6 +15,7 @@ module TinyCdr
     end
 
     def initialize(user, password)
+      @users = {}
       @ldap = Net::LDAP.new(:host => HOST, :port => PORT)
       if DOMAIN
         @ldap.auth("#{user}@#{DOMAIN}", password)
@@ -26,19 +27,63 @@ module TinyCdr
       end
     end
 
-    def ldap_filter
-      @filter ||= Net::LDAP::Filter.ex(USER_ATTRIB, @username)
+    def phone_filter(num)
+      Net::LDAP::Filter.ex(PHONE_ATTRIB, num)
+    end
+
+    def user_filter
+      Net::LDAP::Filter.ex(USER_ATTRIB, @username)
+    end
+
+    def [](attribute)
+      val = attributes[attribute]
+      val.count == 1 ? val.first : val
     end
 
     def attributes
       return false unless @username
       return @attributes if @attributes
-      search_result = @ldap.search(:base => BASE, :filter => ldap_filter)
+      search_result = @ldap.search(:base => BASE, :filter => user_filter)
       if search_result.count == 1
         @attributes = search_result.first
       else
         Log.error "Ldap search returned #{search_result.count} results!"
         {}
+      end
+    end
+
+    def extension_to_user(extension)
+      return @users[extension] if @users[extension]
+      search_result = @ldap.search(:base => BASE, :filter => phone_filter(extension))
+      if search_result.count == 1
+        @users[extension] = search_result.first
+      else
+        nil
+      end
+    end
+
+    def extension_to(attribute, extension)
+      attribute = attribute.to_sym
+      attr = case attribute
+      when :username
+        :sAMAccountName
+      when :name, :fullname
+        :cn
+      when :firstname, :first_name
+        :givenname
+      when :lastname, :last_name, :surname
+        :sn
+      else
+        attribute
+      end
+      if user = extension_to_user(extension)
+        if val = user[attr]
+          val.count == 1 ? val.first : val
+        else
+          nil
+        end
+      else
+        nil
       end
     end
 
