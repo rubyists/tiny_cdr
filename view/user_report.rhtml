@@ -5,7 +5,7 @@
   </tr>
   <tr>
     <th>Total Talk Time</th>
-    <td class="total_time"><%= @total_time %> minutes</td>
+    <td class="total_time"><%= @total_time %> <%= @total_time == 1 ? "minute" : "minutes" %></td>
   </tr>
 </table>
 <table id="user_calls">
