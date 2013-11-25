@@ -62,7 +62,7 @@ class MainController < Controller
     queue_only = (request[:queue_only].empty? ? false : true) rescue nil
     avoid_locals = (request[:avoid_locals].empty? ? false : true) rescue nil
     locals_only = (request[:locals_only].empty? ? false : true) rescue nil
-    Ramaze::Log.info("Calling user report for #{user.inspect} with params phone: #{phone_number} username: #{username} start: #{start} stop: #{stop}")
+    Ramaze::Log.debug("Calling user report for #{user.inspect} with params phone: #{phone_number} username: #{username} start: #{start} stop: #{stop}")
     ds = TinyCdr::Call.user_report(start, stop, user, {:username => username,
                                                  :phone    => phone_number,
                                                  :queue_only    => queue_only,

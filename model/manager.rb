@@ -20,10 +20,12 @@ module TinyCdr
       return true if listen_all
       allowed = false
       if listen_include
-        allowed = call.destination_number =~ listen_include || call.caller_id_number =~ listen_include || call.username =~ listen_include
+        match = Regexp.new(listen_include)
+        allowed = call.destination_number =~ match || call.caller_id_number =~ match || call.username =~ match
       end
       return allowed unless listen_exclude
-      call.destination_number !~ listen_exclude && call.caller_id_number !~ listen_exclude && call.username !~ listen_exclude
+      match = Regexp.new(listen_exclude)
+      call.destination_number !~ match && call.caller_id_number !~ match && call.username !~ match
     end
   end
 end
