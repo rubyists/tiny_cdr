@@ -1,6 +1,6 @@
 $(document).ready(function() {
   $('#user_calls').dataTable({
-    "sDom": 'r<"clear"><"toolbar"T><"clear">l<"clear">ftip',
+    "sDom": '<"toolbar"r><"clear"><"toolbar"T><"clear">l<"clear"><"toolbar"f>tip',
     "oTableTools": {
       "sSwfPath": "/swf/copy_csv_xls_pdf.swf",
       "aButtons": [
