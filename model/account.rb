@@ -18,7 +18,7 @@ module TinyCdr
     end
 
     def authenticated?(password)
-      crytped_password == encrypt(password)
+      crypted_password == encrypt(password)
     end
 
     def self.authenticate(creds)
