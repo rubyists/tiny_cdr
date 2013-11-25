@@ -146,10 +146,12 @@ module TinyCdr
       self.end_stamp          = Time.at(xml.at('/cdr/variables/end_epoch').text.to_i)
       self.billsec            = xml.at('/cdr/variables/billsec').text
       self.duration           = xml.at('/cdr/variables/duration').text
+      super
     end
 
     def after_create
       recording_path
+      super
     end
 
     def self.create_from_xml(given_uuid, xml, ignored_leg = nil)
