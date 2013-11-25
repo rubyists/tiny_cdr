@@ -22,7 +22,7 @@
   <tbody>
   <% @calls.each do |call| %>
     <tr>
-      <td class="user"><%= call.username == call.caller_id_number ? (call.caller_id_number ~ /^\d\d\d\d?$/ ? call.caller_id_number : "") : call.username %></td>
+      <td class="user"><%= call.username == call.caller_id_number ? (call.caller_id_number =~ /^\d\d\d\d?$/ ? call.caller_id_number : "") : call.username %></td>
       <td class="cid_num"><%= call.caller_id_number %></td>
       <td class="cid_name"><%= call.caller_id_name %></td>
       <td class="dest_num"><%= call.destination_number %></td>
