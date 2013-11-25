@@ -56,9 +56,9 @@ class MainController < Controller
     phone_number = nil if phone_number.empty?
     @title = "Call Detail"
     @title << " for #{username}" unless username.nil?
-    @title << " for #{phone_number}" unless phone_number.nil?
-    @title << " from #{start}" unless start.nil?
-    @title << " to #{stop}" unless stop.nil?
+    @title << " to #{phone_number}" unless phone_number.nil?
+    @title << " from #{start.to_s.gsub('/','-')}" unless start.nil?
+    @title << " until #{stop.to_s.gsub('/','-')}" unless stop.nil?
     queue_only = (request[:queue_only].empty? ? false : true) rescue nil
     avoid_locals = (request[:avoid_locals].empty? ? false : true) rescue nil
     locals_only = (request[:locals_only].empty? ? false : true) rescue nil
