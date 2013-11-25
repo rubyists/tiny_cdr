@@ -3,6 +3,7 @@ module TinyCdr
   class Call < Sequel::Model
     set_dataset TinyCdr.db[:calls]
     plugin :lazy_attributes, :original
+    attr_accessor :xml
 
     def inspect
       "<##{self.class.name} #{values.reject { |k,v| k.to_s == "original" }}>"
@@ -116,15 +117,11 @@ module TinyCdr
     end
 
     def xml
-      @_xml ||= Nokogiri::XML(original)
-    end
-
-    def detail
-      @_detail ||= xml.to_xml(indent: 2)
+      @xml ||= Nokogiri::XML(original)
     end
 
     def fifo_recipient
-      detail.callflow["caller_profile"]["originatee"]["originatee_caller_profile"]["destination_number"] rescue nil
+      xml.at("/caller_profile/originatee/originatee_caller_profile/destination_number").text rescue nil
     end
 
     def cid_num
@@ -136,6 +133,8 @@ module TinyCdr
     end
 
     def before_create
+      self.xml                = Nokogiri::XML(self.original)
+      self.original           = xml.to_xml(indent: 2)
       self.username           = xml.at('/cdr/callflow/caller_profile/username').text
       self.caller_id_name     = cid_name
       self.caller_id_number   = cid_num
@@ -161,12 +160,10 @@ module TinyCdr
         return existing
       end
 
-      log = Nokogiri::XML(xml)
-
       create(
         leg:                 leg,
         uuid:                uuid,
-        original:            log.to_xml(indent: 2)
+        original:            xml
       )
     end
 
