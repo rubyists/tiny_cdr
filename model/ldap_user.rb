@@ -11,33 +11,44 @@ module TinyCdr
     BASE = TinyCdr.options[:ldap_base]
 
     def self.authenticate(user, password)
-      user = new(user, password)
+      ldap = Net::LDAP.new(:host => HOST, :port => PORT)
+      if DOMAIN
+        ldap.auth("#{user}@#{DOMAIN}", password)
+      else
+        ldap.auth(user, password)
+      end
+      if ldap.bind
+        new(ldap, user)
+      else
+        false
+      end
     end
 
-    def initialize(user, password)
-      @users = {}
-      @ldap = Net::LDAP.new(:host => HOST, :port => PORT)
-      if DOMAIN
-        @ldap.auth("#{user}@#{DOMAIN}", password)
-      else
-        @ldap.auth(user, password)
-      end
-      if authorized?
-        @username = user
-      end
+    def initialize(ldap, username)
+      @ldap = ldap
+      @username = username
     end
 
     def phone_filter(num)
-      Net::LDAP::Filter.ex(PHONE_ATTRIB, num)
+      Net::LDAP::Filter.eq(PHONE_ATTRIB, num)
     end
 
-    def user_filter
-      Net::LDAP::Filter.ex(USER_ATTRIB, @username)
+    def user_filter(filter = nil)
+      Net::LDAP::Filter.eq(USER_ATTRIB, filter || @username)
     end
 
     def [](attribute)
       val = attributes[attribute]
       val.count == 1 ? val.first : val
+    end
+
+    def all_users
+      return @all_users if @all_users
+      search_result = @ldap.search(:base => BASE, :filter => phone_filter("*"))
+      @all_users = search_result.map { |result|
+        username = result[USER_ATTRIB.to_sym].first
+        self.class.new @ldap, username
+      }
     end
 
     def attributes
@@ -53,13 +64,7 @@ module TinyCdr
     end
 
     def extension_to_user(extension)
-      return @users[extension] if @users[extension]
-      search_result = @ldap.search(:base => BASE, :filter => phone_filter(extension))
-      if search_result.count == 1
-        @users[extension] = search_result.first
-      else
-        nil
-      end
+      all_users.find { |n| n.extension == extension }
     end
 
     def extension_to(attribute, extension)
@@ -77,11 +82,7 @@ module TinyCdr
         attribute
       end
       if user = extension_to_user(extension)
-        if val = user[attr]
-          val.count == 1 ? val.first : val
-        else
-          nil
-        end
+        user[attr]
       else
         nil
       end
@@ -123,8 +124,5 @@ module TinyCdr
       Account.create(username: @username, password: password, password_confirmation: password, extension: extension)
     end
 
-    def authorized?
-      @ldap.bind
-    end
   end
 end

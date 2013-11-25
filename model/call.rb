@@ -37,7 +37,7 @@ module TinyCdr
 
     def convert_spx(type)
       tmp_file_name = "#{File.basename(recording_path)}.#{type}"
-      wav_file = File.join(TMP_FILE_PATH, tmp_file_name, ".wav")
+      wav_file = File.join(TMP_FILE_PATH, tmp_file_name)
       output = %x{speexdec #{recording_path} #{wav_file} 2>&1}
       retval = $?
       if $? == 0
@@ -46,7 +46,7 @@ module TinyCdr
         FileUtils.rm wav_file
         new_file
       else
-        error "Conversion of #{recording_path} to wav failed: #{retval} -> #{output}"
+        Log.error "Conversion of #{recording_path} to wav failed: #{retval} -> #{output}"
         nil
       end
     end
@@ -136,7 +136,7 @@ module TinyCdr
 
       log = Nokogiri::XML(xml)
 
-      create(
+      call = create(
         leg:                 leg,
         uuid:                uuid,
         username:            log.at('/cdr/callflow/caller_profile/username').text,
@@ -151,6 +151,8 @@ module TinyCdr
         duration:            log.at('/cdr/variables/duration').text,
         original:            log.to_xml(indent: 2),
       )
+      call.recording_path
+      call
     end
 
     def queue_servers
@@ -179,6 +181,7 @@ module TinyCdr
     # @conditions - may include :username or :phone
     def self.user_report(start = nil, stop = nil, user = nil, conditions = {})
       conditionals = 'username in ? or caller_id_number in ? or destination_number in ?'
+      conditional = 'caller_id_number ~ ? or destination_number ~ ?'
       username = conditions[:username]
       phone_num = conditions[:phone]
       avoid_locals = conditions.keys.include?(:avoid_locals) ? conditions[:avoid_locals] : false # default to false
@@ -188,14 +191,30 @@ module TinyCdr
       phone_nums = phone_num.split(",") rescue []
       filters = if usernames.size > 0
         if phone_nums.size > 0
-          ["(#{conditionals}) and (#{conditionals})", usernames, usernames, usernames, phone_nums, phone_nums, phone_nums]
+          ["(#{conditionals}) and (#{conditional})", *([usernames] * 3), *([phone_nums.join('|')] * 2)]
         else
-          ["(#{conditionals})", usernames, usernames, usernames]
+          ["#{conditionals}", *([usernames] * 3)]
         end
       elsif phone_nums.size > 0
-        ["(#{conditionals})", phone_nums, phone_nums, phone_nums]
+        ["#{conditional}", *([phone_nums.join("|")] * 2)]
       end
       ds = (filters ? TinyCdr::Call.filter(filters) : TinyCdr::Call)
+      if user
+        if user.manager
+          ds = user.manager.filter_calls(ds)
+        else
+          ds = ds.filter("username = ? or destination_number = ? or caller_id_number = ?", *([user.extension] * 3))
+        end
+      else
+        ds.order(:start_stamp)
+      end
+      if queue_only
+        queue_conditions = []
+        queue_servers.each do |queue_server|
+          queue_condidtions << "channel ~ '#{queue_server}'"
+        end
+        ds = ds.filter(queue_conditions.join(" or ")) if queue_conditions.count > 0
+      end
       unless start.nil?
         start.kind_of?(Date) ?  (ds = ds.filter { start_stamp >= start }) : (ds = ds.filter{start_stamp >= Date.strptime(start, "%m/%d/%Y") })
       end
@@ -204,22 +223,7 @@ module TinyCdr
       end
       ds = ds.filter("caller_id_number ~ '^\\d\\d\\d\\d\\d+$' or destination_number ~ '^\\d\\d\\d\\d\\d+$'") if avoid_locals
       ds = ds.filter("caller_id_number ~ '^\\d\\d\\d\\d?$' and destination_number ~ '^\\d\\d\\d\\d?$'") if locals_only
-      if queue_only
-        queue_conditions = []
-        queue_servers.each do |queue_server|
-          queue_condidtions << "channel ~ '#{queue_server}'"
-        end
-        ds = ds.filter(queue_conditions.join(" or ")) if queue_conditions.count > 0
-      end
-      if user
-        if user.manager
-          user.manager.filter_calls(ds).order(:start_stamp)
-        else
-          ds.filter("username = ? or destination_number = ? or caller_id_number = ?", *([user.extension] * 3)).order(:start_stamp)
-        end
-      else
-        ds.order(:start_stamp)
-      end
+      ds.order(:start_stamp)
     end
   end
 end
