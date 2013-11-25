@@ -5,10 +5,17 @@ class MainController < Controller
 
   def login
     @title = "Login"
+    @head  = '<script type="text/javascript" src="/js/index.js"></script>'
     redirect_referer if logged_in?
     return unless request.post?
     user_login(request.subset(:login, :password))
     redirect_referer
+  end
+
+  def logout
+    @title = "Logged Out"
+    user_logout 
+    @flash = 'You are now logged out. <a href="/login">Log Back In</a>'
   end
 
   # the index action is called automatically when no other action is specified

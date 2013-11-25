@@ -127,6 +127,31 @@ module TinyCdr
       detail.callflow["caller_profile"]["originatee"]["originatee_caller_profile"]["destination_number"] rescue nil
     end
 
+    def cid_num
+      (xml.at('/cdr/variables/effective_caller_id_number') || xml.at('/cdr/callflow/caller_profile/caller_id_number')).text
+    end
+
+    def cid_name
+      (xml.at('/cdr/variables/effective_caller_id_name') || xml.at('/cdr/callflow/caller_profile/origination/origination_caller_profile/caller_id_name') || xml.at('/cdr/callflow/caller_profile/caller_id_name')).text
+    end
+
+    def before_create
+      self.username           = xml.at('/cdr/callflow/caller_profile/username').text
+      self.caller_id_name     = cid_name
+      self.caller_id_number   = cid_num
+      self.destination_number = xml.at('/cdr/callflow/caller_profile/destination_number').text
+      self.channel            = xml.at('/cdr/callflow/caller_profile/chan_name').text
+      self.context            = xml.at('/cdr/callflow/caller_profile/context').text
+      self.start_stamp        = Time.at(xml.at('/cdr/variables/start_epoch').text.to_i)
+      self.end_stamp          = Time.at(xml.at('/cdr/variables/end_epoch').text.to_i)
+      self.billsec            = xml.at('/cdr/variables/billsec').text
+      self.duration           = xml.at('/cdr/variables/duration').text
+    end
+
+    def after_create
+      recording_path
+    end
+
     def self.create_from_xml(given_uuid, xml, ignored_leg = nil)
       /^(?<leg>a|b)_(?<uuid>\S+)$/ =~ given_uuid
 
@@ -136,23 +161,11 @@ module TinyCdr
 
       log = Nokogiri::XML(xml)
 
-      call = create(
+      create(
         leg:                 leg,
         uuid:                uuid,
-        username:            log.at('/cdr/callflow/caller_profile/username').text,
-        caller_id_number:    log.at('/cdr/callflow/caller_profile/caller_id_number').text,
-        caller_id_name:      (log.at('/cdr/callflow/caller_profile/origination/origination_caller_profile/caller_id_name') || log.at('/cdr/callflow/caller_profile/caller_id_name')).text,
-        destination_number:  log.at('/cdr/callflow/caller_profile/destination_number').text,
-        channel:             log.at('/cdr/callflow/caller_profile/chan_name').text,
-        context:             log.at('/cdr/callflow/caller_profile/context').text,
-        start_stamp: Time.at(log.at('/cdr/variables/start_epoch').text.to_i),
-        end_stamp:   Time.at(log.at('/cdr/variables/end_epoch').text.to_i),
-        billsec:             log.at('/cdr/variables/billsec').text,
-        duration:            log.at('/cdr/variables/duration').text,
-        original:            log.to_xml(indent: 2),
+        original:            log.to_xml(indent: 2)
       )
-      call.recording_path
-      call
     end
 
     def queue_servers
