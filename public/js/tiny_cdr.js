@@ -1,10 +1,19 @@
 $(document).ready(function() {
   $('#user_calls').dataTable({
-    "sDom": 'T<"clear">lfrtip',
+    "sDom": 'r<"clear">T<"clear">lftip',
     "oTableTools": {
       "sSwfPath": "/swf/copy_csv_xls_pdf.swf",
       "aButtons": [
-                "copy",
+                {
+                    "sExtends": "csv",
+                    "sButtonText": "CSV",
+                    "mColumns": [ 0, 1, 2, 3, 4, 5 ]
+                },
+                {
+                    "sExtends": "print",
+                    "sButtonText": "Print",
+                    "mColumns": [ 0, 1, 2, 3, 4, 5]
+                },
                 {
                     "sExtends": "pdf",
                     "sButtonText": "PDF - Reporting columns",
@@ -14,16 +23,6 @@ $(document).ready(function() {
                     "sExtends": "pdf",
                     "sButtonText": "PDF - All",
                     "mColumns": "visible"
-                },
-                {
-                    "sExtends": "print",
-                    "sButtonText": "Print",
-                    "mColumns": [ 0, 1, 2, 3, 4, 5]
-                },
-                {
-                    "sExtends": "csv",
-                    "sButtonText": "CSV",
-                    "mColumns": [ 0, 1, 2, 3, 4, 5 ]
                 }
             ]
     }
