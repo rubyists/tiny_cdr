@@ -5,7 +5,7 @@ class MainController < Controller
 
   def login
     @title = "Login"
-    @head  = '<script type="text/javascript" src="/js/index.js"></script>'
+    @head  = '<script type="text/javascript" src="/js/login.js"></script>'
     redirect_referer if logged_in?
     return unless request.post?
     user_login(request.subset(:login, :password))
