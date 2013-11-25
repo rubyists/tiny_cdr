@@ -27,8 +27,15 @@
   </head>
   <body>
     <div id="logo">
+      <span id="logout">
+        <% if logged_in? %>
+          <a href="/logout">Log Out</a>
+        <% end %>
+      </span>
     </div>
-    <h1><%= @title %></h1>
+    <div id="title">
+      <h1><%= @title %></h1>
+    </div>
     <div id="content">
       <%= @content %>
     </div>
