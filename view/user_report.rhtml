@@ -9,6 +9,7 @@
 <table id="user_calls">
   <thead>
     <tr>
+      <th>User</th>
       <th>CID Num</th>
       <th>CID Name</th>
       <th>Dest Num</th>
@@ -21,6 +22,7 @@
   <tbody>
   <% @calls.each do |call| %>
     <tr>
+      <td class="user"><%= call.username %></td>
       <td class="cid_num"><%= call.caller_id_number %></td>
       <td class="cid_name"><%= call.caller_id_name %></td>
       <td class="dest_num"><%= call.destination_number %></td>

@@ -8,7 +8,7 @@ $(document).ready(function() {
                 {
                     "sExtends": "pdf",
                     "sButtonText": "PDF - Reporting columns",
-                    "mColumns": [ 0, 1, 2, 3, 4 ]
+                    "mColumns": [ 0, 1, 2, 3, 4, 5 ]
                 },
                 {
                     "sExtends": "pdf",
@@ -18,12 +18,12 @@ $(document).ready(function() {
                 {
                     "sExtends": "print",
                     "sButtonText": "Print",
-                    "mColumns": [ 0, 1, 2, 3, 4 ]
+                    "mColumns": [ 0, 1, 2, 3, 4, 5]
                 },
                 {
                     "sExtends": "csv",
                     "sButtonText": "CSV",
-                    "mColumns": [ 0, 1, 2, 3, 4 ]
+                    "mColumns": [ 0, 1, 2, 3, 4, 5 ]
                 }
             ]
     }
