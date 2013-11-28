@@ -9,7 +9,7 @@ class MainController < Controller
     redirect_referer if logged_in?
     return unless request.post?
     user_login(request.subset(:login, :password))
-    redirect_referer
+    answer :/
   end
 
   def logout

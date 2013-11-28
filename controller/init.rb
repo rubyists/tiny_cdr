@@ -2,7 +2,7 @@
 # controllers
 
 class Controller < Ramaze::Controller
-  helper :xhtml, :user
+  helper :xhtml, :user, :stack
   layout :main
   engine :Erubis
   trait :user_model => TinyCdr::Account
@@ -10,7 +10,7 @@ class Controller < Ramaze::Controller
 
   def login_first
     return if logged_in?
-    redirect MainController.r(:login)
+    call MainController.r(:login)
   end
 end
 
