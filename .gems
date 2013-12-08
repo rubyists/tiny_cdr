@@ -15,3 +15,5 @@ ramaze -v2012.12.08
 rest-client -v1.6.7
 sequel -v4.4.0
 thin -v1.6.1
+net-ldap -v0.3.1
+log4r -v1.1.10

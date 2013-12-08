@@ -68,9 +68,9 @@ class MainController < Controller
                                                  :queue_only    => queue_only,
                                                  :locals_only    => locals_only,
                                                  :avoid_locals => avoid_locals})
-    @calls = ds.all
-
-    @total_time = @calls.inject(0) {|a,b| a + b.duration.to_i }/60
+    @size = ds.count
+    @call_array = ds.map { |call| call_array(call) }
+    @total_time = ds.inject(0) {|a,b| a + b.duration.to_i }/60
   end
 
   def listen(fname)
@@ -111,5 +111,26 @@ class MainController < Controller
 
   def format_time(time)
     time.strftime('%Y-%m-%d %H:%M')
+  end
+
+  private
+  def call_array(call)
+    if call.recording_path && call.can_listen?(user)
+      audio = %Q{<audio src=\\"/listen/#{call.id}.wav\\" preload=\\"none\\" controls> Your browser does not support the <code>audio</code> element. Please use one of the file format downloads.  </audio>}
+      playback = %Q{<a href=\\"/listen/#{call.id}.mp3\\">MP3</a> <a href=\\"/listen/#{call.id}.ogg\\">OGG</a> <a href=\\"/listen/#{call.id}.wav\\">WAV</a>}
+    else
+      audio = playback = "N/A"
+    end
+
+    '[ "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s" ]' % [
+      (call.username == call.caller_id_number ? (call.caller_id_number =~ /^\d\d\d\d?$/ ? call.caller_id_number : "") : call.username),
+      call.caller_id_number,
+      ::CGI.unescape(call.caller_id_name),
+      call.destination_number,
+      format_time(call.start_stamp),
+      call.duration,
+      audio,
+      playback
+    ]
   end
 end
