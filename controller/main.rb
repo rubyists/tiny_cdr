@@ -125,7 +125,7 @@ class MainController < Controller
     '[ "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s" ]' % [
       (call.username == call.caller_id_number ? (call.caller_id_number =~ /^\d\d\d\d?$/ ? call.caller_id_number : "") : call.username),
       call.caller_id_number,
-      ::CGI.unescape(call.caller_id_name),
+      ::CGI.unescape(call.caller_id_name.to_s),
       call.destination_number,
       format_time(call.start_stamp),
       call.duration,
